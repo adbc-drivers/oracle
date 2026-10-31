@@ -1,0 +1,64 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+[setup]
+drop = "TEST_OBJECT_TYPES"
+
+[setup.connection.options]
+"oracle.use_extension_type" = { apply = "true", revert = "false" }
+
+[setup.statement.options]
+"oracle.use_extension_type" = { apply = "true", revert = "false" }
+
+[tags]
+caveats = ["The driver will return just the storage type by default; the extension type requires oracle.use_extension_type=true"]
+sql-type-name = "OBJECT"
+
+// part: setup_query
+
+CREATE TYPE PERSONT4 AS OBJECT (
+    A VARCHAR2(100),
+    B NUMBER,
+    C NUMBER(10, 0),
+    D BINARY_FLOAT,
+    E BINARY_DOUBLE,
+    F BLOB,
+    G TIMESTAMP,
+    H TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE test_object_types (
+    idx NUMBER(10, 0),
+    res PERSONT4
+);
+
+INSERT INTO test_object_types (idx, res) VALUES (1, PERSONT4('12345', 12345.67890, 12345, 12345.67, 12345.67890, HEXTORAW('000102030405'), TIMESTAMP '2023-01-01 12:34:56', TIMESTAMP '2023-01-01 12:34:56 +00:00'));
+INSERT INTO test_object_types (idx, res) VALUES (2, NULL);
+
+// part: query
+
+SELECT RES FROM TEST_OBJECT_TYPES ORDER BY IDX ASC
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "u",
+            "flags": ["nullable"],
+            "metadata": {
+                "ARROW:extension:name": "arrow.json"
+            }
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": "{\"A\":\"12345\",\"B\":\"12345.6789\",\"C\":12345,\"D\":12345.67,\"E\":12345.6789,\"F\":\"AAECAwQF\",\"G\":\"2023-01-01T12:34:56Z\",\"H\":\"2023-01-01T12:34:56Z\"}"}
+{"RES": null}

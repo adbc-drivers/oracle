@@ -1,0 +1,36 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+ignore-lints = ["must-test-null-values"]
+
+[tags]
+sql-type-name = "NVARCHAR2(2000)"
+caveats = ["Oracle treats empty strings as NULL; rust-oracledb preserves NULL on read (the legacy driver normalizes it to an empty string)"]
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "idx",
+            "format": "d:19,0",
+            "flags": ["nullable"]
+        },
+        {
+            "name": "value",
+            "format": "u",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"idx": 0, "value": null}
+{"idx": 1, "value": null}
+{"idx": 2, "value": "hello world"}
+{"idx": 3, "value": "Special chars: !@#$%^&*()_+-=[]{}|;:,.<>?/\"\\"}
+{"idx": 4, "value": "Unicode: こんにちは, 世界!"}
+{"idx": 5, "value": "A very long string that tests the limits of string handling in various systems. This string is intentionally verbose to ensure that databases can properly handle longer text values without truncation or other issues."}

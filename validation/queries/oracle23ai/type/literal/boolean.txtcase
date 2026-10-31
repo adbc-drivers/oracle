@@ -1,0 +1,27 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: query
+
+SELECT TRUE AS RES, FALSE AS RES2 FROM DUAL
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "b",
+            "flags": ["nullable"]
+        },
+        {
+            "name": "RES2",
+            "format": "b",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": true, "RES2": false}

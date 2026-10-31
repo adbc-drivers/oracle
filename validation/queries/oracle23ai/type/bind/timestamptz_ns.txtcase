@@ -1,0 +1,32 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+[setup]
+drop = "TEST_TIMESTAMPTZ"
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "tsn:UTC",
+            "flags": ["nullable"]
+        },
+        {
+            "name": "RES2",
+            "format": "tsn:UTC",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": null, "RES2": null}
+{"RES": -9223372036854775808, "RES2": -9223372036854775808}
+{"RES": 946684800000000000, "RES2": 946684800000000000}
+{"RES": 1684158330000000000, "RES2": 1684158330000000000}
+{"RES": 9223372036854775807, "RES2": 9223372036854775807}

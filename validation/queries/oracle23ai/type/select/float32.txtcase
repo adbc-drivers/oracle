@@ -1,0 +1,51 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+[setup]
+drop = "TEST_FLOAT32"
+
+[tags]
+sql-type-name = "BINARY_FLOAT"
+
+// part: setup_query
+
+CREATE TABLE test_float32 (
+    idx INTEGER,
+    res BINARY_FLOAT
+);
+
+INSERT INTO test_float32 (idx, res) VALUES (1, 3.14f);
+INSERT INTO test_float32 (idx, res) VALUES (2, 0.0f);
+INSERT INTO test_float32 (idx, res) VALUES (3, -3.4e38f);
+INSERT INTO test_float32 (idx, res) VALUES (4, 3.4e38f);
+INSERT INTO test_float32 (idx, res) VALUES (5, 1.175494351e-38f);
+INSERT INTO test_float32 (idx, res) VALUES (6, NULL);
+
+// part: query
+
+SELECT RES FROM TEST_FLOAT32 ORDER BY IDX
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "f",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": 3.14}
+{"RES": 0.0}
+{"RES": -3.4e38}
+{"RES": 3.4e38}
+{"RES": 1.175494351e-38}
+{"RES": null}

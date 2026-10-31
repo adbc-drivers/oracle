@@ -1,0 +1,27 @@
+# Local validation environment: Python 3.14
+adbc-driver-manager==1.12.0
+adbc-drivers-validation @ git+https://github.com/adbc-drivers/validation.git@f2b451c1e75462f0c6a74d61d65c4a6ecd4e7cb2
+annotated-types==0.8.0
+bidict==0.24.1
+cffi==2.1.1
+cryptography==50.0.2
+duckdb==1.5.5
+hypothesis==6.168.2
+iniconfig==2.3.0
+Jinja2==3.1.6
+MarkupSafe==3.0.3
+oracledb==26.1.0
+packaging==26.3
+plpygis==0.6.1
+pluggy==1.6.0
+pyarrow==25.0.1
+pycparser==3.12
+pydantic==2.13.5
+pydantic_core==2.46.5
+Pygments==2.21.0
+pytest==9.1.1
+sortedcontainers==2.4.0
+sqlglot==30.18.0
+typing-inspection==0.4.4
+typing_extensions==4.16.0
+whenever==0.10.5

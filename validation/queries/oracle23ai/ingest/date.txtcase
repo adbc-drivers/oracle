@@ -1,0 +1,27 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "idx",
+            "format": "d:19,0",
+            "flags": ["nullable"]
+        },
+        {
+            "name": "value",
+            "format": "tsu:",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"idx": 0, "value": 0}
+{"idx": 1, "value": 1684108800000000}
+{"idx": 2, "value": -315532800000000}
+{"idx": 3, "value": 6311520000000000}
+{"idx": 4, "value": null}

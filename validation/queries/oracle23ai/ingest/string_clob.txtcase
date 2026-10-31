@@ -1,0 +1,60 @@
+// Copyright (c) 2026 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+[setup.statement.options]
+"oracle.ingest.string_type" = { apply = "clob", revert = "nvarchar2" }
+
+[tags]
+sql-type-name = "CLOB"
+caveats = ["Oracle treats empty strings as NULL; rust-oracledb preserves NULL on read (the legacy driver normalizes it to an empty string)"]
+
+// part: input_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "idx",
+            "format": "l",
+            "flags": ["nullable"]
+        },
+        {
+            "name": "value",
+            "format": "u",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: input
+
+{"idx": 0, "value": null}
+{"idx": 1, "value": ""}
+{"idx": 2, "value": "hello world"}
+{"idx": 3, "value": "Unicode: こんにちは, 世界!"}
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "idx",
+            "format": "d:19,0",
+            "flags": ["nullable"]
+        },
+        {
+            "name": "value",
+            "format": "U",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"idx": 0, "value": null}
+{"idx": 1, "value": null}
+{"idx": 2, "value": "hello world"}
+{"idx": 3, "value": "Unicode: こんにちは, 世界!"}

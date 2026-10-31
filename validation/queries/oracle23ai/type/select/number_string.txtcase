@@ -1,0 +1,65 @@
+// Copyright (c) 2026 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+[setup]
+drop = "TEST_NUMBER_STRING"
+
+[setup.connection.options]
+"oracle.query.unbounded_number_type" = { apply = "string", revert = "float64" }
+
+[setup.statement.options]
+"oracle.query.unbounded_number_type" = { apply = "string", revert = "float64" }
+
+[tags]
+field-type-name = "NUMBER"
+sql-type-name = "NUMBER (oracle.query.unbounded_number_type = string)"
+
+// part: setup_query
+
+CREATE TABLE test_number_string (
+    idx NUMBER(10, 0),
+    res NUMBER
+);
+
+INSERT INTO test_number_string (idx, res) VALUES (1, 1111111111111111111111111111111111111111111111111111111111111111);
+INSERT INTO test_number_string (idx, res) VALUES (2, 11111111111111111111111111111111111111);
+INSERT INTO test_number_string (idx, res) VALUES (3, 0.11111111111111111111111111111111111111);
+INSERT INTO test_number_string (idx, res) VALUES (4, -11111111111111111111111111111111111111);
+INSERT INTO test_number_string (idx, res) VALUES (5, -0.11111111111111111111111111111111111111);
+-- https://forums.oracle.com/ords/apexds/post/can-integer-type-store-infinity-1138
+-- In theory +inf/-inf can be stored, and should only exist if imported from Oracle 5
+-- Here we poke the bit representation to get the values instead
+-- +inf
+INSERT INTO test_number_string (idx, res) VALUES (6, utl_raw.cast_to_number('FF65'));
+-- -inf
+INSERT INTO test_number_string (idx, res) VALUES (7, utl_raw.cast_to_number('00'));
+INSERT INTO test_number_string (idx, res) VALUES (8, NULL);
+
+// part: query
+
+SELECT RES FROM TEST_NUMBER_STRING ORDER BY IDX ASC
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "u",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": "1111111111111111111111111111111111111111000000000000000000000000"}
+{"RES": "11111111111111111111111111111111111111"}
+{"RES": "0.11111111111111111111111111111111111111"}
+{"RES": "-11111111111111111111111111111111111111"}
+{"RES": "-0.11111111111111111111111111111111111111"}
+{"RES": "Infinity"}
+{"RES": "-Infinity"}
+{"RES": null}

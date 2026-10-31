@@ -1,0 +1,24 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+[tags]
+sql-type-name = "BINARY_DOUBLE"
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "idx",
+            "format": "d:19,0",
+            "flags": ["nullable"]
+        },
+        {
+            "name": "value",
+            "format": "g",
+            "flags": ["nullable"]
+        }
+    ]
+}

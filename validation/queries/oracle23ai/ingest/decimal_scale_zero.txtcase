@@ -1,0 +1,43 @@
+// Copyright (c) 2026 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+[tags]
+sql-type-name = "NUMBER(p, s)"
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "idx",
+            "format": "d:19,0",
+            "flags": ["nullable"]
+        },
+        {
+            "name": "value",
+            "format": "l",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"idx": 0, "value": null}
+{"idx": 1, "value": 0}
+{"idx": 2, "value": 12345}
+{"idx": 3, "value": -12345}
+{"idx": 4, "value": 999999999}
+{"idx": 5, "value": -999999999}
+{"idx": 6, "value": 1}
+{"idx": 7, "value": 10}
+{"idx": 8, "value": 100}
+{"idx": 9, "value": 1000}
+{"idx": 10, "value": 10000}
+{"idx": 11, "value": 100000}
+{"idx": 12, "value": 1000000}
+{"idx": 13, "value": 10000000}
+{"idx": 14, "value": 100000000}
+{"idx": 15, "value": 1000000000}

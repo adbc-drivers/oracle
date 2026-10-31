@@ -1,0 +1,49 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+[setup]
+drop = "TEST_ROWID"
+
+[tags]
+sql-type-name = "ROWID, UROWID"
+
+// part: setup_query
+
+CREATE TABLE test_rowid (
+    idx INTEGER,
+    res ROWID,
+    res2 UROWID
+);
+
+INSERT INTO test_rowid (idx, res, res2) VALUES (1, 'AAATtCAAMAAAADLABD', '*BAMAAJMCVUv+');
+INSERT INTO test_rowid (idx, res, res2) VALUES (2, NULL, NULL);
+
+// part: query
+
+SELECT RES, RES2 FROM TEST_ROWID ORDER BY IDX
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "u",
+            "flags": ["nullable"]
+        },
+        {
+            "name": "RES2",
+            "format": "u",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": "AAATtCAAMAAAADLABD", "RES2": "*BAMAAJMCVUv+"}
+{"RES": null, "RES2": null}

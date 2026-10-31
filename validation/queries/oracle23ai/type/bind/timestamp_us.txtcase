@@ -1,0 +1,37 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+[setup]
+drop = "TEST_TIMESTAMP"
+
+// part: bind
+
+{"idx": 3, "res": 1684158330123456}
+{"idx": 2, "res": 946684800123456}
+{"idx": 1, "res": -62135596800000000}
+{"idx": 4, "res": 253402300799999999}
+{"idx": 0, "res": null}
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "tsu:",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": null}
+{"RES": -62135596800000000}
+{"RES": 946684800123456}
+{"RES": 1684158330123456}
+{"RES": 253402300799999999}

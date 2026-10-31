@@ -1,0 +1,29 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+[tags]
+sql-type-name = "VARCHAR2"
+
+// part: query
+
+SELECT 'hello world' AS RES FROM DUAL
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "u",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": "hello world"}

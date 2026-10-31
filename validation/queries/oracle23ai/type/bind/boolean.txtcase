@@ -1,0 +1,32 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+sort-keys = [["RES", "ascending"]]
+
+[setup]
+drop = "TEST_BOOLEAN"
+
+[tags]
+sql-type-name = "BOOLEAN"
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "b",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": null}
+{"RES": false}
+{"RES": true}

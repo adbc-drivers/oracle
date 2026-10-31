@@ -1,0 +1,51 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+[setup]
+drop = "TEST_FLOAT64"
+
+[tags]
+sql-type-name = "BINARY_DOUBLE"
+
+// part: setup_query
+
+CREATE TABLE test_float64 (
+    idx INTEGER,
+    res BINARY_DOUBLE
+);
+
+INSERT INTO test_float64 (idx, res) VALUES (1, 3.14159265358979d);
+INSERT INTO test_float64 (idx, res) VALUES (2, 0.0d);
+INSERT INTO test_float64 (idx, res) VALUES (3, -1.7976931348623157e308d);
+INSERT INTO test_float64 (idx, res) VALUES (4, 1.7976931348623157e308d);
+INSERT INTO test_float64 (idx, res) VALUES (5, 2.2250738585072014e-308d);
+INSERT INTO test_float64 (idx, res) VALUES (6, NULL);
+
+// part: query
+
+SELECT RES FROM TEST_FLOAT64 ORDER BY IDX
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "g",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": 3.14159265358979}
+{"RES": 0.0}
+{"RES": -1.7976931348623157e308}
+{"RES": 1.7976931348623157e308}
+{"RES": 2.2250738585072014e-308}
+{"RES": null}

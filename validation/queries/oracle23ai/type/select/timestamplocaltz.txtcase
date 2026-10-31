@@ -1,0 +1,50 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+[setup]
+drop = "TEST_TIMESTAMPLOCALTZ"
+
+[tags]
+sql-type-name = "TIMESTAMP WITH LOCAL TIME ZONE"
+caveats = [
+  "It is *highly recommended* to set the session time zone to UTC, else you may get the wrong values."
+]
+
+// part: setup_query
+
+CREATE TABLE test_timestamplocaltz (
+    idx INTEGER,
+    res TIMESTAMP WITH LOCAL TIME ZONE
+);
+
+INSERT INTO test_timestamplocaltz (idx, res) VALUES (1, TIMESTAMP '2023-05-15 13:45:30 +00:00');
+INSERT INTO test_timestamplocaltz (idx, res) VALUES (2, TIMESTAMP '2000-01-01 00:00:00 +00:00');
+INSERT INTO test_timestamplocaltz (idx, res) VALUES (3, TIMESTAMP '1969-07-20 20:17:40 +00:00');
+INSERT INTO test_timestamplocaltz (idx, res) VALUES (4, NULL);
+
+// part: query
+
+SELECT RES FROM TEST_TIMESTAMPLOCALTZ ORDER BY IDX ASC
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "tsu:UTC",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": 1684158330000000}
+{"RES": 946684800000000}
+{"RES": -14182940000000}
+{"RES": null}

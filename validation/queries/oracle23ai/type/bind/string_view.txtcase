@@ -1,0 +1,34 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+sort-keys = [["RES", "ascending"]]
+
+[setup]
+drop = "TEST_STRING_VIEW"
+
+[tags]
+sql-type-name = "RAW"
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "u",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": null}
+{"RES": null}
+{"RES": "Special chars: !@#$%^&*()_+{}|:\"<>?~`-=[]\\;',./"}
+{"RES": "Unicode: 你好, Привет, こんにちは, สวัสดี"}
+{"RES": "hello"}

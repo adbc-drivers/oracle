@@ -1,0 +1,56 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+[setup]
+drop = "TEST_NUMBER"
+
+[setup.connection.options]
+"oracle.use_high_precision" = { apply = "false", revert = "true" }
+
+[setup.statement.options]
+"oracle.use_high_precision" = { apply = "false", revert = "true" }
+
+[tags]
+caveats = ["use_high_precision is true by default"]
+sql-type-name = "NUMBER(p, s) (s != 0, p > 18, oracle.use_high_precision = false)"
+
+// part: setup_query
+
+CREATE TABLE test_number (
+    idx NUMBER(10, 0),
+    res NUMBER(19, 0)
+);
+
+INSERT INTO test_number (idx, res) VALUES (1, 12345);
+INSERT INTO test_number (idx, res) VALUES (2, -12345);
+INSERT INTO test_number (idx, res) VALUES (3, 9223372036854775807);
+INSERT INTO test_number (idx, res) VALUES (4, -9223372036854775808);
+INSERT INTO test_number (idx, res) VALUES (5, NULL);
+
+// part: query
+
+SELECT RES FROM TEST_NUMBER ORDER BY IDX ASC
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "g",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": 12345}
+{"RES": -12345}
+{"RES": 9223372036854775807.0}
+{"RES": -9223372036854775808.0}
+{"RES": null}

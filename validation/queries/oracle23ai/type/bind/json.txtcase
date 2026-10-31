@@ -1,0 +1,95 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+sort-keys = [["RES", "ascending"]]
+
+[setup]
+drop = "TEST_JSON"
+
+[setup.connection.options]
+"oracle.use_extension_type" = { apply = "true", revert = "false" }
+
+[setup.statement.options]
+"oracle.use_extension_type" = { apply = "true", revert = "false" }
+
+[tags]
+sql-type-name = "JSON"
+
+// part: setup_query
+
+CREATE TABLE TEST_JSON (
+    IDX NUMBER,
+    RES JSON
+) TABLESPACE tbsp;
+
+// part: bind_query
+
+INSERT INTO TEST_JSON VALUES ($1, $2)
+
+// part: bind_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "IDX",
+            "format": "i",
+            "flags": ["nullable"]
+        },
+        {
+            "name": "RES",
+            "format": "u",
+            "flags": ["nullable"],
+            "metadata": {
+                "ARROW:extension:name": "arrow.json"
+            }
+        }
+    ]
+}
+
+// part: bind
+
+{"IDX": 0, "RES": null}
+{"IDX": 1, "RES": "null"}
+{"IDX": 2, "RES": "\"foobar\""}
+{"IDX": 3, "RES": "1"}
+{"IDX": 4, "RES": "true"}
+{"IDX": 5, "RES": "[]"}
+{"IDX": 6, "RES": "[\"spam\",\"eggs\",2.5,false]"}
+{"IDX": 7, "RES": "{\"a\":12345,\"b\":\"hello\",\"c\":[1,2,3],\"d\":{\"e\":\"nested\"}}"}
+{"IDX": 8, "RES": "[{\"id\":1,\"name\":\"Alice\"},{\"id\":2,\"name\":\"Bob\"}]"}
+
+// part: query
+
+SELECT RES FROM TEST_JSON ORDER BY IDX
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "u",
+            "flags": ["nullable"],
+            "metadata": {
+                "ARROW:extension:name": "arrow.json"
+            }
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": null}
+{"RES": "null"}
+{"RES": "\"foobar\""}
+{"RES": "1"}
+{"RES": "true"}
+{"RES": "[]"}
+{"RES": "[\"spam\",\"eggs\",2.5,false]"}
+{"RES": "{\"a\":12345,\"b\":\"hello\",\"c\":[1,2,3],\"d\":{\"e\":\"nested\"}}"}
+{"RES": "[{\"id\":1,\"name\":\"Alice\"},{\"id\":2,\"name\":\"Bob\"}]"}

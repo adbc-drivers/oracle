@@ -1,0 +1,24 @@
+// Copyright (c) 2026 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+[setup]
+drop = "TEST_TIMESTAMP4"
+
+// part: setup_query
+
+CREATE TABLE test_timestamp4 (
+    idx INTEGER,
+    "res" TIMESTAMP(4)
+);
+
+INSERT INTO test_timestamp4 (idx, "res") VALUES (1, TIMESTAMP '2023-05-15 13:45:30.1234');
+INSERT INTO test_timestamp4 (idx, "res") VALUES (2, TIMESTAMP '2000-01-01 00:00:00.2345');
+INSERT INTO test_timestamp4 (idx, "res") VALUES (3, TIMESTAMP '1969-07-20 20:17:40.3456');
+INSERT INTO test_timestamp4 (idx, "res") VALUES (4, TIMESTAMP '0001-01-01 00:00:00.0000');
+INSERT INTO test_timestamp4 (idx, "res") VALUES (5, TIMESTAMP '9999-12-31 23:59:59.9999');
+INSERT INTO test_timestamp4 (idx, "res") VALUES (6, NULL);
+
+// part: query
+
+SELECT "res" FROM TEST_TIMESTAMP4 ORDER BY IDX

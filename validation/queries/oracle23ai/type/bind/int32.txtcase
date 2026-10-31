@@ -1,0 +1,35 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+sort-keys = [["RES", "ascending"]]
+
+[setup]
+drop = "TEST_INT32"
+
+[tags]
+sql-type-name = "NUMBER(38, 0)"
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "d:38,0",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": null}
+{"RES": -2147483648}
+{"RES": 0}
+{"RES": 42}
+{"RES": 131072}
+{"RES": 2147483647}

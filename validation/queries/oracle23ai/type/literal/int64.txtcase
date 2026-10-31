@@ -1,0 +1,11 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+hide = true
+
+// part: query
+
+SELECT CAST(4294967296 AS BIGINT) AS RES FROM DUAL

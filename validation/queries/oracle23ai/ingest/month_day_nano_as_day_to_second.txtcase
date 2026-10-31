@@ -1,0 +1,66 @@
+// Copyright (c) 2026 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+[setup.statement.options]
+"oracle.ingest.month_day_nano_type" = { apply = "day_second", revert = "" }
+"oracle.query.day_time_interval_type" = { apply = "monthdaynano", revert = "auto" }
+
+[tags]
+sql-type-name = "INTERVAL DAY(9) TO SECOND(9)"
+
+// part: input_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "idx",
+            "format": "l",
+            "flags": ["nullable"]
+        },
+        {
+            "name": "value",
+            "format": "tin",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: input
+
+{"idx": 0, "value": null}
+{"idx": 1, "value": "0M0d0ns"}
+{"idx": 2, "value": "0M1d0ns"}
+{"idx": 3, "value": "0M0d3600000000000ns"}
+{"idx": 4, "value": "0M-1d0ns"}
+{"idx": 5, "value": "0M106751d85636854775807ns"}
+{"idx": 6, "value": "0M-106751d-85636854775808ns"}
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "idx",
+            "format": "d:19,0",
+            "flags": ["nullable"]
+        },
+        {
+            "name": "value",
+            "format": "tin",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"idx": 0, "value": null}
+{"idx": 1, "value": "0M0d0ns"}
+{"idx": 2, "value": "0M1d0ns"}
+{"idx": 3, "value": "0M0d3600000000000ns"}
+{"idx": 4, "value": "0M-1d0ns"}
+{"idx": 5, "value": "0M106751d85636854775807ns"}
+{"idx": 6, "value": "0M-106751d-85636854775808ns"}

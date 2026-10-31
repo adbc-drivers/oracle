@@ -1,0 +1,54 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+ignore-lints = ["must-test-null-values"]
+
+[setup]
+drop = "TEST_NCHAR"
+
+[tags]
+sql-type-name = "CHAR"
+caveats = ["Oracle treats empty strings as NULL; rust-oracledb preserves NULL on read (the legacy driver normalizes it to an empty string)"]
+
+// part: setup_query
+
+CREATE TABLE test_nchar (
+    idx INTEGER,
+    res NCHAR(1),
+    res2 NCHAR(10)
+);
+
+INSERT INTO test_nchar (idx, res, res2) VALUES (1, 'á', 'áasd');
+INSERT INTO test_nchar (idx, res, res2) VALUES (2, '和', '和');
+INSERT INTO test_nchar (idx, res, res2) VALUES (3, NULL, NULL);
+
+// part: query
+
+SELECT RES, RES2 FROM TEST_NCHAR ORDER BY IDX ASC
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "u",
+            "flags": ["nullable"]
+        },
+        {
+            "name": "RES2",
+            "format": "u",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": "á", "RES2": "áasd      "}
+{"RES": "和", "RES2": "和         "}
+{"RES": null, "RES2": null}

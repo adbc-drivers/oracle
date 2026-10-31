@@ -1,0 +1,52 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+ignore-lints = ["must-test-null-values"]
+
+[setup]
+drop = "TEST_CLOB"
+
+[tags]
+sql-type-name = "CLOB"
+caveats = ["Oracle treats empty strings as NULL; rust-oracledb preserves NULL on read (the legacy driver normalizes it to an empty string)"]
+
+// part: setup_query
+
+CREATE TABLE test_clob (
+    idx INTEGER,
+    res CLOB
+);
+
+INSERT INTO test_clob (idx, res) VALUES (1, 'a');
+INSERT INTO test_clob (idx, res) VALUES (2, 'foobar');
+INSERT INTO test_clob (idx, res) VALUES (3, 'this is a longer string');
+INSERT INTO test_clob (idx, res) VALUES (4, 'this is a very long string that goes on for a while');
+INSERT INTO test_clob (idx, res) VALUES (5, NULL);
+
+// part: query
+
+SELECT RES FROM TEST_CLOB ORDER BY IDX ASC
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "U",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": "a"}
+{"RES": "foobar"}
+{"RES": "this is a longer string"}
+{"RES": "this is a very long string that goes on for a while"}
+{"RES": null}

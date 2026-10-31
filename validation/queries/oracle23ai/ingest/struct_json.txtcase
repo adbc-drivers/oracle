@@ -1,0 +1,86 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+[setup.statement.options]
+"oracle.ingest.struct_type" = { apply = "JSON", revert = "" }
+"oracle.ingest.tablespace" = { apply = "tbsp", revert = "" }
+"oracle.use_extension_type" = { apply = "true", revert = "false" }
+
+[tags]
+sql-type-name = "JSON"
+
+// part: input_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "idx",
+            "format": "l",
+            "flags": ["nullable"]
+        },
+        {
+            "name": "value",
+            "format": "+s",
+            "flags": ["nullable"],
+            "children": [
+                {
+                    "name": "key",
+                    "format": "U",
+                    "flags": ["nullable"]
+                },
+                {
+                    "name": "num",
+                    "format": "g",
+                    "flags": ["nullable"]
+                },
+                {
+                    "name": "row",
+                    "format": "g",
+                    "flags": ["nullable"]
+                },
+                {
+                    "name": "active",
+                    "format": "b",
+                    "flags": ["nullable"]
+                }
+            ]
+        }
+    ]
+}
+
+// part: input
+
+{"idx": 0, "value": null}
+{"idx": 1, "value": {}}
+{"idx": 2, "value": {"key": "foo"}}
+{"idx": 3, "value": {"key": "foo", "num": 42.42, "row": 64, "active": false}}
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "idx",
+            "format": "d:19,0",
+            "flags": ["nullable"]
+        },
+        {
+            "name": "value",
+            "format": "u",
+            "flags": ["nullable"],
+            "metadata": {
+                "ARROW:extension:name": "arrow.json"
+            }
+        }
+    ]
+}
+
+// part: expected
+
+{"idx": 0, "value": null}
+{"idx": 1, "value": "{}"}
+{"idx": 2, "value": "{\"key\":\"foo\"}"}
+{"idx": 3, "value": "{\"active\":false,\"key\":\"foo\",\"num\":42.42,\"row\":64}"}

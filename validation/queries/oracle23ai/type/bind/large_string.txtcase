@@ -1,0 +1,69 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+sort-keys = [["res", "ascending"]]
+
+[setup]
+drop = "test_string"
+
+[tags]
+sql-type-name = "NVARCHAR2"
+
+// part: setup_query
+
+CREATE TABLE "test_string" (
+    "res" NVARCHAR2(2000)
+);
+
+// part: bind_query
+
+INSERT INTO "test_string" VALUES ($1)
+
+// part: bind_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "res",
+            "format": "U",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: bind
+
+{"res": "hello"}
+{"res": ""}
+{"res": "Special chars: !@#$%^&*()_+{}|:\"<>?~`-=[]\\;',./"}
+{"res": "Unicode: 你好, Привет, こんにちは, สวัสดี"}
+{"res": null}
+
+// part: query
+
+SELECT "res" FROM "test_string" ORDER BY "res"
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "res",
+            "format": "u",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"res": null}
+{"res": null}
+{"res": "Special chars: !@#$%^&*()_+{}|:\"<>?~`-=[]\\;',./"}
+{"res": "Unicode: 你好, Привет, こんにちは, สวัสดี"}
+{"res": "hello"}

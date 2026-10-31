@@ -1,0 +1,29 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+[tags]
+show-arrow-type-parameters = true
+
+// part: query
+
+SELECT CAST(16384 AS SMALLINT) AS RES FROM DUAL
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "d:38,0",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": "16384"}

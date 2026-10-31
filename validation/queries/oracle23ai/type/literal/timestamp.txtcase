@@ -1,0 +1,22 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: query
+
+SELECT TIMESTAMP '2023-05-15 13:45:30' AS RES FROM DUAL
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "tsn:",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": 1684158330000000000}

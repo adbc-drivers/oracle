@@ -1,0 +1,50 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+[tags]
+sql-type-name = "NUMBER"
+
+// part: input_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "idx",
+            "format": "l",
+            "flags": ["nullable"]
+        },
+        {
+            "name": "value",
+            "format": "n",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: input
+
+{"idx": 0, "value": null}
+{"idx": 1, "value": null}
+{"idx": 2, "value": null}
+{"idx": 3, "value": null}
+{"idx": 4, "value": null}
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "idx",
+            "format": "d:19,0",
+            "flags": ["nullable"]
+        },
+        {
+            "name": "value",
+            "format": "g",
+            "flags": ["nullable"]
+        }
+    ]
+}

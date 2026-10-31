@@ -1,0 +1,41 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+sort-keys = [["RES", "ascending"]]
+
+[setup]
+drop = "TEST_BINARY_VIEW"
+
+[tags]
+sql-type-name = "RAW"
+
+// part: setup_query
+
+CREATE TABLE test_binary_view (
+    res RAW(2000)
+);
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "z",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": null}
+{"RES": null}
+{"RES": "3q2+7w=="}
+{"RES": "AA=="}
+{"RES": "AQAC"}
+{"RES": "44GT44KT44Gr44Gh44Gv44CB5LiW55WM77yB"}

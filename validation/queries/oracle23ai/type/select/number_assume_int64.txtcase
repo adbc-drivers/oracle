@@ -1,0 +1,52 @@
+// Copyright (c) 2026 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+[setup]
+drop = "TEST_NUMBER_ASSUME_INT64"
+
+[setup.connection.options]
+"oracle.query.unbounded_number_type" = { apply = "int64", revert = "float64" }
+
+[setup.statement.options]
+"oracle.query.unbounded_number_type" = { apply = "int64", revert = "float64" }
+
+[tags]
+field-type-name = "NUMBER"
+sql-type-name = "NUMBER (oracle.query.unbounded_number_type = int64)"
+
+// part: setup_query
+
+CREATE TABLE test_number_assume_int64 (
+    idx NUMBER(10, 0),
+    res NUMBER
+);
+
+INSERT INTO test_number_assume_int64 (idx, res) VALUES (1, 0);
+INSERT INTO test_number_assume_int64 (idx, res) VALUES (2, 9223372036854775807);
+INSERT INTO test_number_assume_int64 (idx, res) VALUES (3, -9223372036854775808);
+INSERT INTO test_number_assume_int64 (idx, res) VALUES (4, NULL);
+
+// part: query
+
+SELECT RES FROM TEST_NUMBER_ASSUME_INT64 ORDER BY IDX ASC
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "l",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": 0}
+{"RES": 9223372036854775807}
+{"RES": -9223372036854775808}
+{"RES": null}

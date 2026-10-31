@@ -1,0 +1,53 @@
+// Copyright (c) 2026 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+[setup]
+drop = "TEST_REAL"
+
+[tags]
+sql-type-name = "REAL"
+
+// part: setup_query
+
+CREATE TABLE test_real (
+    idx INTEGER,
+    res REAL
+);
+
+INSERT INTO test_real (idx, res) VALUES (1, NULL);
+INSERT INTO test_real (idx, res) VALUES (2, 0.0);
+INSERT INTO test_real (idx, res) VALUES (3, -1.5);
+INSERT INTO test_real (idx, res) VALUES (4, 1.5);
+INSERT INTO test_real (idx, res) VALUES (5, 1.00001);
+INSERT INTO test_real (idx, res) VALUES (6, 1.000000001);
+INSERT INTO test_real (idx, res) VALUES (7, 1.0000000000001);
+INSERT INTO test_real (idx, res) VALUES (8, 1.000000000000001);
+
+// part: query
+
+SELECT RES FROM TEST_REAL ORDER BY IDX ASC
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "g",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": null}
+{"RES": 0.0}
+{"RES": -1.5}
+{"RES": 1.5}
+{"RES": 1.00001}
+{"RES": 1.000000001}
+{"RES": 1.0000000000001}
+{"RES": 1.000000000000001}

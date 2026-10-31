@@ -1,0 +1,33 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+[setup]
+drop = "TEST_DATE"
+
+// part: query
+
+SELECT RES FROM TEST_DATE ORDER BY IDX
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "tss:",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": 1684108800}
+{"RES": -62135596800}
+{"RES": -14256000}
+{"RES": 253402214400}
+{"RES": null}

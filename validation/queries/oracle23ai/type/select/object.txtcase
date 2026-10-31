@@ -1,0 +1,64 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+[setup]
+drop = "TEST_OBJECT"
+
+[setup.connection.options]
+"oracle.use_extension_type" = { apply = "true", revert = "false" }
+
+[setup.statement.options]
+"oracle.use_extension_type" = { apply = "true", revert = "false" }
+
+[tags]
+caveats = ["The driver will return just the storage type by default; the extension type requires oracle.use_extension_type=true"]
+sql-type-name = "OBJECT"
+
+// part: setup_query
+
+CREATE TYPE PERSONT1 AS OBJECT (
+    IDNO VARCHAR2(100),
+    NAME VARCHAR2(100)
+);
+
+CREATE TABLE test_object (
+    idx NUMBER(10, 0),
+    res PERSONT1
+);
+
+INSERT INTO test_object (idx, res) VALUES (1, PERSONT1('12345', 'John Doe'));
+INSERT INTO test_object (idx, res) VALUES (2, PERSONT1(NULL, 'Jane Doe'));
+INSERT INTO test_object (idx, res) VALUES (3, PERSONT1('12345', NULL));
+INSERT INTO test_object (idx, res) VALUES (4, PERSONT1(NULL, NULL));
+INSERT INTO test_object (idx, res) VALUES (5, NULL);
+
+// part: query
+
+SELECT RES FROM TEST_OBJECT ORDER BY IDX ASC
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "u",
+            "flags": ["nullable"],
+            "metadata": {
+                "ARROW:extension:name": "arrow.json"
+            }
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": "{\"IDNO\":\"12345\",\"NAME\":\"John Doe\"}"}
+{"RES": "{\"IDNO\":\"\",\"NAME\":\"Jane Doe\"}"}
+{"RES": "{\"IDNO\":\"12345\",\"NAME\":\"\"}"}
+{"RES": "{\"IDNO\":\"\",\"NAME\":\"\"}"}
+{"RES": null}

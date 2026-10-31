@@ -1,0 +1,190 @@
+// Copyright (c) 2026 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+[setup]
+drop = "TEST_SDO_GEOMETRY"
+
+[setup.connection.options]
+"oracle.use_extension_type" = { apply = "true", revert = "false" }
+
+[setup.statement.options]
+"oracle.statement.execution_mode" = { apply = "batch", revert = "row" }
+"oracle.use_extension_type" = { apply = "true", revert = "false" }
+
+[tags]
+sql-type-name = "SDO_GEOMETRY"
+
+// part: setup_query
+
+CREATE TABLE TEST_SDO_GEOMETRY (
+    IDX INTEGER,
+    RES1 SDO_GEOMETRY,
+    RES2 SDO_GEOMETRY,
+    RES3 SDO_GEOMETRY
+);
+
+INSERT INTO TEST_SDO_GEOMETRY (IDX, RES1, RES2, RES3) VALUES (1, NULL, NULL, NULL);
+INSERT INTO TEST_SDO_GEOMETRY (IDX, RES1, RES2, RES3) VALUES (
+  2,
+  SDO_GEOMETRY('GEOMETRYCOLLECTION EMPTY', 4326),
+  SDO_GEOMETRY('GEOMETRYCOLLECTION EMPTY', SDO_WEBMERCATOR),
+  SDO_GEOMETRY('GEOMETRYCOLLECTION EMPTY')
+);
+INSERT INTO TEST_SDO_GEOMETRY (IDX, RES1, RES2, RES3) VALUES (
+  3,
+  SDO_GEOMETRY('POINT(1 2)', 4326),
+  SDO_GEOMETRY('POINT(1 2)', SDO_WEBMERCATOR),
+  SDO_GEOMETRY('POINT(1 2)')
+);
+INSERT INTO TEST_SDO_GEOMETRY (IDX, RES1, RES2, RES3) VALUES (
+  4,
+  SDO_GEOMETRY('LINESTRING(1 2, 3 4)', 4326),
+  SDO_GEOMETRY('LINESTRING(1 2, 3 4)', SDO_WEBMERCATOR),
+  SDO_GEOMETRY('LINESTRING(1 2, 3 4)')
+);
+INSERT INTO TEST_SDO_GEOMETRY (IDX, RES1, RES2, RES3) VALUES (
+  5,
+  SDO_GEOMETRY('POLYGON((1 2, 3 4, 5 6, 1 2))', 4326),
+  SDO_GEOMETRY('POLYGON((1 2, 3 4, 5 6, 1 2))', SDO_WEBMERCATOR),
+  SDO_GEOMETRY('POLYGON((1 2, 3 4, 5 6, 1 2))')
+);
+INSERT INTO TEST_SDO_GEOMETRY (IDX, RES1, RES2, RES3) VALUES (
+  6,
+  SDO_GEOMETRY('MULTIPOINT(1 2, 3 4)', 4326),
+  SDO_GEOMETRY('MULTIPOINT(1 2, 3 4)', SDO_WEBMERCATOR),
+  SDO_GEOMETRY('MULTIPOINT(1 2, 3 4)')
+);
+INSERT INTO TEST_SDO_GEOMETRY (IDX, RES1, RES2, RES3) VALUES (
+  7,
+  SDO_GEOMETRY('MULTILINESTRING((1 2, 3 4), (5 6, 7 8))', 4326),
+  SDO_GEOMETRY('MULTILINESTRING((1 2, 3 4), (5 6, 7 8))', SDO_WEBMERCATOR),
+  SDO_GEOMETRY('MULTILINESTRING((1 2, 3 4), (5 6, 7 8))')
+);
+INSERT INTO TEST_SDO_GEOMETRY (IDX, RES1, RES2, RES3) VALUES (
+  8,
+  SDO_GEOMETRY('MULTIPOLYGON(((1 2, 3 4, 5 6, 1 2)), ((7 8, 9 10, 11 12, 7 8)))', 4326),
+  SDO_GEOMETRY('MULTIPOLYGON(((1 2, 3 4, 5 6, 1 2)), ((7 8, 9 10, 11 12, 7 8)))', SDO_WEBMERCATOR),
+  SDO_GEOMETRY('MULTIPOLYGON(((1 2, 3 4, 5 6, 1 2)), ((7 8, 9 10, 11 12, 7 8)))')
+);
+INSERT INTO TEST_SDO_GEOMETRY (IDX, RES1, RES2, RES3) VALUES (
+  9,
+  SDO_GEOMETRY('GEOMETRYCOLLECTION(POINT(1 2), LINESTRING(3 4, 5 6))', 4326),
+  SDO_GEOMETRY('GEOMETRYCOLLECTION(POINT(1 2), LINESTRING(3 4, 5 6))', SDO_WEBMERCATOR),
+  SDO_GEOMETRY('GEOMETRYCOLLECTION(POINT(1 2), LINESTRING(3 4, 5 6))')
+);
+
+// part: query
+
+SELECT RES1, RES2, RES3 FROM TEST_SDO_GEOMETRY ORDER BY IDX ASC
+
+// part: catalog_schema
+// no extension metadata since we can only get that by querying the table
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES1",
+            "format": "z",
+            "flags": ["nullable"],
+            "metadata": {
+                "ARROW:extension:name": "geoarrow.wkb"
+            }
+        },
+        {
+            "name": "RES2",
+            "format": "z",
+            "flags": ["nullable"],
+            "metadata": {
+                "ARROW:extension:name": "geoarrow.wkb"
+            }
+        },
+        {
+            "name": "RES3",
+            "format": "z",
+            "flags": ["nullable"],
+            "metadata": {
+                "ARROW:extension:name": "geoarrow.wkb"
+            }
+        }
+    ]
+}
+
+// part: execute_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES1",
+            "format": "z",
+            "flags": ["nullable"],
+            "metadata": {
+                "ARROW:extension:name": "geoarrow.wkb"
+            }
+        },
+        {
+            "name": "RES2",
+            "format": "z",
+            "flags": ["nullable"],
+            "metadata": {
+                "ARROW:extension:name": "geoarrow.wkb"
+            }
+        },
+        {
+            "name": "RES3",
+            "format": "z",
+            "flags": ["nullable"],
+            "metadata": {
+                "ARROW:extension:name": "geoarrow.wkb"
+            }
+        }
+    ]
+}
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES1",
+            "format": "z",
+            "flags": ["nullable"],
+            "metadata": {
+                "ARROW:extension:name": "geoarrow.wkb",
+                "ARROW:extension:metadata": "{\"crs\": \"EPSG:4326\", \"crs_type\": \"authority_code\"}"
+            }
+        },
+        {
+            "name": "RES2",
+            "format": "z",
+            "flags": ["nullable"],
+            "metadata": {
+                "ARROW:extension:name": "geoarrow.wkb",
+                "ARROW:extension:metadata": "{\"crs\": \"EPSG:3857\", \"crs_type\": \"authority_code\"}"
+            }
+        },
+        {
+            "name": "RES3",
+            "format": "z",
+            "flags": ["nullable"],
+            "metadata": {
+                "ARROW:extension:name": "geoarrow.wkb"
+            }
+        }
+    ]
+}
+
+// part: expected
+
+{"RES1": null, "RES2": null, "RES3": null}
+{"RES1": "AQcAACDmEAAAAAAAAA==", "RES2": "AQcAACARDwAAAAAAAA==", "RES3": "AQcAACAAAAAAAAAAAA=="}
+{"RES1": "AQEAACDmEAAAAAAAAAAA8D8AAAAAAAAAQA==", "RES2": "AQEAACARDwAAAAAAAAAA8D8AAAAAAAAAQA==", "RES3": "AQEAACAAAAAAAAAAAAAA8D8AAAAAAAAAQA=="}
+{"RES1": "AQIAACDmEAAAAgAAAAAAAAAAAPA/AAAAAAAAAEAAAAAAAAAIQAAAAAAAABBA", "RES2": "AQIAACARDwAAAgAAAAAAAAAAAPA/AAAAAAAAAEAAAAAAAAAIQAAAAAAAABBA", "RES3": "AQIAACAAAAAAAgAAAAAAAAAAAPA/AAAAAAAAAEAAAAAAAAAIQAAAAAAAABBA"}
+{"RES1": "AQMAACDmEAAAAQAAAAQAAAAAAAAAAADwPwAAAAAAAABAAAAAAAAACEAAAAAAAAAQQAAAAAAAABRAAAAAAAAAGEAAAAAAAADwPwAAAAAAAABA", "RES2": "AQMAACARDwAAAQAAAAQAAAAAAAAAAADwPwAAAAAAAABAAAAAAAAACEAAAAAAAAAQQAAAAAAAABRAAAAAAAAAGEAAAAAAAADwPwAAAAAAAABA", "RES3": "AQMAACAAAAAAAQAAAAQAAAAAAAAAAADwPwAAAAAAAABAAAAAAAAACEAAAAAAAAAQQAAAAAAAABRAAAAAAAAAGEAAAAAAAADwPwAAAAAAAABA"}
+{"RES1": "AQQAACDmEAAAAgAAAAEBAAAAAAAAAAAA8D8AAAAAAAAAQAEBAAAAAAAAAAAACEAAAAAAAAAQQA==", "RES2": "AQQAACARDwAAAgAAAAEBAAAAAAAAAAAA8D8AAAAAAAAAQAEBAAAAAAAAAAAACEAAAAAAAAAQQA==", "RES3": "AQQAACAAAAAAAgAAAAEBAAAAAAAAAAAA8D8AAAAAAAAAQAEBAAAAAAAAAAAACEAAAAAAAAAQQA=="}
+{"RES1": "AQUAACDmEAAAAgAAAAECAAAAAgAAAAAAAAAAAPA/AAAAAAAAAEAAAAAAAAAIQAAAAAAAABBAAQIAAAACAAAAAAAAAAAAFEAAAAAAAAAYQAAAAAAAABxAAAAAAAAAIEA=", "RES2": "AQUAACARDwAAAgAAAAECAAAAAgAAAAAAAAAAAPA/AAAAAAAAAEAAAAAAAAAIQAAAAAAAABBAAQIAAAACAAAAAAAAAAAAFEAAAAAAAAAYQAAAAAAAABxAAAAAAAAAIEA=", "RES3": "AQUAACAAAAAAAgAAAAECAAAAAgAAAAAAAAAAAPA/AAAAAAAAAEAAAAAAAAAIQAAAAAAAABBAAQIAAAACAAAAAAAAAAAAFEAAAAAAAAAYQAAAAAAAABxAAAAAAAAAIEA="}
+{"RES1": "AQYAACDmEAAAAgAAAAEDAAAAAQAAAAQAAAAAAAAAAADwPwAAAAAAAABAAAAAAAAACEAAAAAAAAAQQAAAAAAAABRAAAAAAAAAGEAAAAAAAADwPwAAAAAAAABAAQMAAAABAAAABAAAAAAAAAAAABxAAAAAAAAAIEAAAAAAAAAiQAAAAAAAACRAAAAAAAAAJkAAAAAAAAAoQAAAAAAAABxAAAAAAAAAIEA=", "RES2": "AQYAACARDwAAAgAAAAEDAAAAAQAAAAQAAAAAAAAAAADwPwAAAAAAAABAAAAAAAAACEAAAAAAAAAQQAAAAAAAABRAAAAAAAAAGEAAAAAAAADwPwAAAAAAAABAAQMAAAABAAAABAAAAAAAAAAAABxAAAAAAAAAIEAAAAAAAAAiQAAAAAAAACRAAAAAAAAAJkAAAAAAAAAoQAAAAAAAABxAAAAAAAAAIEA=", "RES3": "AQYAACAAAAAAAgAAAAEDAAAAAQAAAAQAAAAAAAAAAADwPwAAAAAAAABAAAAAAAAACEAAAAAAAAAQQAAAAAAAABRAAAAAAAAAGEAAAAAAAADwPwAAAAAAAABAAQMAAAABAAAABAAAAAAAAAAAABxAAAAAAAAAIEAAAAAAAAAiQAAAAAAAACRAAAAAAAAAJkAAAAAAAAAoQAAAAAAAABxAAAAAAAAAIEA="}
+{"RES1": "AQcAACDmEAAAAgAAAAEBAAAAAAAAAAAA8D8AAAAAAAAAQAECAAAAAgAAAAAAAAAAAAhAAAAAAAAAEEAAAAAAAAAUQAAAAAAAABhA", "RES2": "AQcAACARDwAAAgAAAAEBAAAAAAAAAAAA8D8AAAAAAAAAQAECAAAAAgAAAAAAAAAAAAhAAAAAAAAAEEAAAAAAAAAUQAAAAAAAABhA", "RES3": "AQcAACAAAAAAAgAAAAEBAAAAAAAAAAAA8D8AAAAAAAAAQAECAAAAAgAAAAAAAAAAAAhAAAAAAAAAEEAAAAAAAAAUQAAAAAAAABhA"}

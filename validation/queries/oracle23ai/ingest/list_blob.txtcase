@@ -1,0 +1,90 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+[setup.statement.options]
+"oracle.ingest.struct_type" = { apply = "BLOB", revert = "" }
+
+[tags]
+sql-type-name = "BLOB"
+
+// part: input_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "idx",
+            "format": "l",
+            "flags": ["nullable"]
+        },
+        {
+            "name": "value",
+            "format": "+l",
+            "flags": ["nullable"],
+            "children": [
+                {
+                    "name": "value",
+                    "format": "+s",
+                    "flags": ["nullable"],
+                    "children": [
+                        {
+                            "name": "key",
+                            "format": "U",
+                            "flags": ["nullable"]
+                        },
+                        {
+                            "name": "num",
+                            "format": "g",
+                            "flags": ["nullable"]
+                        },
+                        {
+                            "name": "row",
+                            "format": "g",
+                            "flags": ["nullable"]
+                        },
+                        {
+                            "name": "active",
+                            "format": "b",
+                            "flags": ["nullable"]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+
+// part: input
+
+{"idx": 0, "value": null}
+{"idx": 1, "value": []}
+{"idx": 2, "value": [null, {}]}
+{"idx": 3, "value": [null, {"key": "foo"}]}
+{"idx": 4, "value": [null, {"key": "foo", "num": 42.42, "row": 64, "active": false}]}
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "idx",
+            "format": "d:19,0",
+            "flags": ["nullable"]
+        },
+        {
+            "name": "value",
+            "format": "Z",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"idx": 0, "value": null}
+{"idx": 1, "value": "W10="}
+{"idx": 2, "value": "W251bGwse31d"}
+{"idx": 3, "value": "W251bGwseyJrZXkiOiJmb28ifV0="}
+{"idx": 4, "value": "W251bGwseyJhY3RpdmUiOmZhbHNlLCJrZXkiOiJmb28iLCJudW0iOjQyLjQyLCJyb3ciOjY0fV0="}

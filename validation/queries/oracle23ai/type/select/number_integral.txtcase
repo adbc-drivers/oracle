@@ -1,0 +1,49 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+[setup]
+drop = "TEST_NUMBER_INTEGRAL"
+
+[tags]
+sql-type-name = "NUMBER(p, 0) (p <= 18)"
+
+// part: setup_query
+
+CREATE TABLE test_number_integral (
+    idx NUMBER(10, 0),
+    res NUMBER(18, 0)
+);
+
+INSERT INTO test_number_integral (idx, res) VALUES (1, 12345);
+INSERT INTO test_number_integral (idx, res) VALUES (2, -12345);
+INSERT INTO test_number_integral (idx, res) VALUES (3, 922337203685477580);
+INSERT INTO test_number_integral (idx, res) VALUES (4, -922337203685477580);
+INSERT INTO test_number_integral (idx, res) VALUES (5, NULL);
+
+// part: query
+
+SELECT RES FROM TEST_NUMBER_INTEGRAL ORDER BY IDX ASC
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "l",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": 12345}
+{"RES": -12345}
+{"RES": 922337203685477580}
+{"RES": -922337203685477580}
+{"RES": null}

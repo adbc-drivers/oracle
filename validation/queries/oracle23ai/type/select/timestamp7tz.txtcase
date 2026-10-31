@@ -1,0 +1,24 @@
+// Copyright (c) 2026 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+[setup]
+drop = "TEST_TIMESTAMPTZ7"
+
+// part: setup_query
+
+CREATE TABLE test_timestamptz7 (
+    idx INTEGER,
+    "res" TIMESTAMP(7) WITH TIME ZONE
+);
+
+INSERT INTO test_timestamptz7 (idx, "res") VALUES (1, TIMESTAMP '2023-05-15 13:45:30.1234567 +00:00');
+INSERT INTO test_timestamptz7 (idx, "res") VALUES (2, TIMESTAMP '2000-01-01 00:00:00.2345678 +00:00');
+INSERT INTO test_timestamptz7 (idx, "res") VALUES (3, TIMESTAMP '1969-07-20 20:17:40.3456789 +00:00');
+INSERT INTO test_timestamptz7 (idx, "res") VALUES (4, TIMESTAMP '1677-09-21 00:12:43.2 +00:00');
+INSERT INTO test_timestamptz7 (idx, "res") VALUES (5, TIMESTAMP '2262-04-11 23:47:16.8 +00:00');
+INSERT INTO test_timestamptz7 (idx, "res") VALUES (6, NULL);
+
+// part: query
+
+SELECT "res" FROM TEST_TIMESTAMPTZ7 ORDER BY IDX

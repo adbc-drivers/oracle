@@ -1,0 +1,41 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+sort-keys = [["RES", "ascending"]]
+
+[setup]
+drop = "TEST_FLOAT64"
+
+[tags]
+sql-type-name = "BINARY_DOUBLE"
+
+// part: setup_query
+
+CREATE TABLE test_float64 (
+    res BINARY_DOUBLE
+);
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "g",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": null}
+{"RES": -1.7976931348623157e+308}
+{"RES": -2.5}
+{"RES": 0.0}
+{"RES": 3.141592653589793}
+{"RES": 1.7976931348623157e+308}

@@ -1,0 +1,39 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+ignore-lints = ["must-test-null-values"]
+
+[setup]
+drop = "TEST_STRING"
+
+[tags]
+sql-type-name = "VARCHAR2"
+caveats = ["Oracle treats empty strings as NULL; rust-oracledb preserves NULL on read (the legacy driver normalizes it to an empty string)"]
+
+// part: query
+
+SELECT RES FROM TEST_STRING ORDER BY IDX
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "u",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": "hello"}
+{"RES": null}
+{"RES": "Special chars: !@#$%^&*()_+{}|:\"<>?~`-=[]\\;',./"}
+{"RES": "Unicode: 你好, Привет, こんにちは, สวัสดี"}
+{"RES": null}

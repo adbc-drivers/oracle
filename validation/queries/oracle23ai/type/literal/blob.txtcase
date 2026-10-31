@@ -1,0 +1,29 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+[tags]
+sql-type-name = "BLOB"
+
+// part: query
+
+SELECT TO_BLOB(HEXTORAW('e38193e38293e381abe381a1e381afe38081e4b896e7958cefbc81')) AS RES FROM DUAL
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "Z",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": "44GT44KT44Gr44Gh44Gv44CB5LiW55WM77yB"}

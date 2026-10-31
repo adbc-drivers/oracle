@@ -1,0 +1,34 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+[setup]
+drop = "TEST_BOOLEAN"
+
+[tags]
+caveats = ["Only supported on Oracle Database 23ai or newer.  Requires the Oracle Instant client 23.26 or newer."]
+
+// part: query
+
+SELECT RES FROM TEST_BOOLEAN ORDER BY IDX
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "b",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": true}
+{"RES": false}
+{"RES": null}

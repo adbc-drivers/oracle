@@ -1,0 +1,24 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "idx",
+            "format": "d:19,0",
+            "flags": ["nullable"]
+        },
+        {
+            "name": "value",
+            "format": "tsn:UTC",
+            "flags": ["nullable"]
+        },
+        {
+            "name": "value2",
+            "format": "tsn:UTC",
+            "flags": ["nullable"]
+        }
+    ]
+}

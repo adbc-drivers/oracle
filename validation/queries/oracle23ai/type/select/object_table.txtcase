@@ -1,0 +1,66 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+[setup]
+drop = "TEST_OBJECT_TABLE"
+
+[setup.connection.options]
+"oracle.use_extension_type" = { apply = "true", revert = "false" }
+
+[setup.statement.options]
+"oracle.use_extension_type" = { apply = "true", revert = "false" }
+
+[tags]
+caveats = ["The driver will return just the storage type by default; the extension type requires oracle.use_extension_type=true"]
+sql-type-name = "OBJECT"
+
+// part: setup_query
+
+CREATE TYPE PERSONT2 AS OBJECT (
+    IDNO VARCHAR2(100),
+    NAME VARCHAR2(100)
+);
+
+CREATE TYPE PEOPLET2 AS TABLE OF PERSONT2;
+
+CREATE TABLE test_object_table (
+    idx NUMBER(10, 0),
+    res PEOPLET2
+) NESTED TABLE res STORE AS res_nt;
+
+INSERT INTO test_object_table (idx, res) VALUES (1, PEOPLET2());
+INSERT INTO test_object_table (idx, res) VALUES (2, PEOPLET2(PERSONT2('12345', 'John Doe')));
+INSERT INTO test_object_table (idx, res) VALUES (3, PEOPLET2(PERSONT2('12345', 'John Doe'), PERSONT2('67890', 'Alice Smith')));
+INSERT INTO test_object_table (idx, res) VALUES (4, PEOPLET2(PERSONT2('12345', NULL), PERSONT2('67890', 'Alice Smith')));
+INSERT INTO test_object_table (idx, res) VALUES (5, NULL);
+
+// part: query
+
+SELECT RES FROM TEST_OBJECT_TABLE ORDER BY IDX ASC
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "u",
+            "flags": ["nullable"],
+            "metadata": {
+                "ARROW:extension:name": "arrow.json"
+            }
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": "[]"}
+{"RES": "[{\"IDNO\":\"12345\",\"NAME\":\"John Doe\"}]"}
+{"RES": "[{\"IDNO\":\"12345\",\"NAME\":\"John Doe\"},{\"IDNO\":\"67890\",\"NAME\":\"Alice Smith\"}]"}
+{"RES": "[{\"IDNO\":\"12345\",\"NAME\":\"\"},{\"IDNO\":\"67890\",\"NAME\":\"Alice Smith\"}]"}
+{"RES": null}

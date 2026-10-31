@@ -1,0 +1,31 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+[tags]
+sql-type-name = "BLOB"
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "idx",
+            "format": "d:19,0",
+            "flags": ["nullable"]
+        },
+        {
+            "name": "value",
+            "format": "Z",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"idx": 0, "value": null}
+{"idx": 1, "value": null}
+{"idx": 2, "value": "SGVsbG8gV29ybGQ="}
+{"idx": 3, "value": "44GT44KT44Gr44Gh44Gv44CB5LiW55WM77yB"}

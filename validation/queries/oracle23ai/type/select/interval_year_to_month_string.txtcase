@@ -1,0 +1,102 @@
+// Copyright (c) 2026 Columnar Technologies Inc.  All rights reserved.
+// part: metadata
+
+[setup]
+drop = "TEST_INTERVAL_YEAR_TO_MONTH"
+
+[setup.connection.options]
+"oracle.query.year_month_interval_type" = { apply = "string", revert = "auto" }
+
+[setup.statement.options]
+"oracle.query.year_month_interval_type" = { apply = "string", revert = "auto" }
+
+[tags]
+caveats = ["Values are formatted as ISO 8601 duration strings (e.g. `P9Y11M`). Unlike `auto` and `monthdaynano` modes, `string` mode does not overflow for `INTERVAL YEAR(9) TO MONTH` since the full year/month value is represented textually rather than as a 32-bit integer."]
+field-type-name = "INTERVAL YEAR TO MONTH"
+sql-type-name = "INTERVAL YEAR TO MONTH (oracle.query.year_month_interval_type = string)"
+
+// part: setup_query
+
+CREATE TABLE test_interval_year_to_month (
+    idx INTEGER,
+    res0 INTERVAL YEAR(0) TO MONTH,
+    res1 INTERVAL YEAR(1) TO MONTH,
+    res2 INTERVAL YEAR(2) TO MONTH,
+    res3 INTERVAL YEAR(3) TO MONTH,
+    res4 INTERVAL YEAR(4) TO MONTH,
+    res5 INTERVAL YEAR(5) TO MONTH,
+    res6 INTERVAL YEAR(6) TO MONTH,
+    res7 INTERVAL YEAR(7) TO MONTH,
+    res8 INTERVAL YEAR(8) TO MONTH,
+    res9 INTERVAL YEAR(9) TO MONTH
+);
+
+INSERT INTO test_interval_year_to_month VALUES (1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO test_interval_year_to_month VALUES (
+  2,
+  INTERVAL '0-1' YEAR(0) TO MONTH,
+  INTERVAL '0-1' YEAR(1) TO MONTH,
+  INTERVAL '0-1' YEAR(2) TO MONTH,
+  INTERVAL '0-1' YEAR(3) TO MONTH,
+  INTERVAL '0-1' YEAR(4) TO MONTH,
+  INTERVAL '0-1' YEAR(5) TO MONTH,
+  INTERVAL '0-1' YEAR(6) TO MONTH,
+  INTERVAL '0-1' YEAR(7) TO MONTH,
+  INTERVAL '0-1' YEAR(8) TO MONTH,
+  INTERVAL '0-1' YEAR(9) TO MONTH
+);
+INSERT INTO test_interval_year_to_month VALUES (
+  3,
+  INTERVAL '0-11' YEAR(0) TO MONTH,
+  INTERVAL '9-11' YEAR(1) TO MONTH,
+  INTERVAL '99-11' YEAR(2) TO MONTH,
+  INTERVAL '999-11' YEAR(3) TO MONTH,
+  INTERVAL '9999-11' YEAR(4) TO MONTH,
+  INTERVAL '99999-11' YEAR(5) TO MONTH,
+  INTERVAL '999999-11' YEAR(6) TO MONTH,
+  INTERVAL '9999999-11' YEAR(7) TO MONTH,
+  INTERVAL '99999999-11' YEAR(8) TO MONTH,
+  INTERVAL '178956970-7' YEAR(9) TO MONTH
+);
+INSERT INTO test_interval_year_to_month VALUES (
+  4,
+  INTERVAL '-0-11' YEAR(0) TO MONTH,
+  INTERVAL '-9-11' YEAR(1) TO MONTH,
+  INTERVAL '-99-11' YEAR(2) TO MONTH,
+  INTERVAL '-999-11' YEAR(3) TO MONTH,
+  INTERVAL '-9999-11' YEAR(4) TO MONTH,
+  INTERVAL '-99999-11' YEAR(5) TO MONTH,
+  INTERVAL '-999999-11' YEAR(6) TO MONTH,
+  INTERVAL '-9999999-11' YEAR(7) TO MONTH,
+  INTERVAL '-99999999-11' YEAR(8) TO MONTH,
+  INTERVAL '-178956970-8' YEAR(9) TO MONTH
+);
+
+// part: query
+
+SELECT RES0, RES1, RES2, RES3, RES4, RES5, RES6, RES7, RES8, RES9 FROM TEST_INTERVAL_YEAR_TO_MONTH ORDER BY IDX ASC
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {"name": "RES0", "format": "u", "flags": ["nullable"]},
+        {"name": "RES1", "format": "u", "flags": ["nullable"]},
+        {"name": "RES2", "format": "u", "flags": ["nullable"]},
+        {"name": "RES3", "format": "u", "flags": ["nullable"]},
+        {"name": "RES4", "format": "u", "flags": ["nullable"]},
+        {"name": "RES5", "format": "u", "flags": ["nullable"]},
+        {"name": "RES6", "format": "u", "flags": ["nullable"]},
+        {"name": "RES7", "format": "u", "flags": ["nullable"]},
+        {"name": "RES8", "format": "u", "flags": ["nullable"]},
+        {"name": "RES9", "format": "u", "flags": ["nullable"]}
+    ]
+}
+
+// part: expected
+
+{"RES0": null, "RES1": null, "RES2": null, "RES3": null, "RES4": null, "RES5": null, "RES6": null, "RES7": null, "RES8": null, "RES9": null}
+{"RES0": "P1M", "RES1": "P1M", "RES2": "P1M", "RES3": "P1M", "RES4": "P1M", "RES5": "P1M", "RES6": "P1M", "RES7": "P1M", "RES8": "P1M", "RES9": "P1M"}
+{"RES0": "P11M", "RES1": "P9Y11M", "RES2": "P99Y11M", "RES3": "P999Y11M", "RES4": "P9999Y11M", "RES5": "P99999Y11M", "RES6": "P999999Y11M", "RES7": "P9999999Y11M", "RES8": "P99999999Y11M", "RES9": "P178956970Y7M"}
+{"RES0": "P-11M", "RES1": "P-9Y-11M", "RES2": "P-99Y-11M", "RES3": "P-999Y-11M", "RES4": "P-9999Y-11M", "RES5": "P-99999Y-11M", "RES6": "P-999999Y-11M", "RES7": "P-9999999Y-11M", "RES8": "P-99999999Y-11M", "RES9": "P-178956970Y-8M"}

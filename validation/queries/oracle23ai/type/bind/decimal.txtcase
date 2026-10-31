@@ -1,0 +1,34 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+sort-keys = [["RES", "ascending"]]
+
+[setup]
+drop = "TEST_DECIMAL"
+
+[tags]
+sql-type-name = "NUMBER(p, s)"
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "d:10,2",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": null}
+{"RES": "-999.99"}
+{"RES": "0.00"}
+{"RES": "123.45"}
+{"RES": "9999999.99"}

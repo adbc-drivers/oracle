@@ -1,0 +1,36 @@
+// Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+// part: metadata
+
+# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+
+[setup]
+drop = "TEST_INT16"
+
+[tags]
+show-arrow-type-parameters = true
+
+// part: query
+
+SELECT RES FROM TEST_INT16 ORDER BY IDX
+
+// part: expected_schema
+
+{
+    "format": "+s",
+    "children": [
+        {
+            "name": "RES",
+            "format": "d:38,0",
+            "flags": ["nullable"]
+        }
+    ]
+}
+
+// part: expected
+
+{"RES": "16384"}
+{"RES": "32767"}
+{"RES": "-32768"}
+{"RES": "0"}
+{"RES": null}

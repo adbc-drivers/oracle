@@ -1,0 +1,49 @@
+# Build outputs
+target/
+build/
+dist/
+Cargo.lock
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+*.dSYM/
+driver_manager_examples/cpp/adbc_oracle_cpp*
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.hypothesis/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Local settings
+.env
+.env.*
+!.env.example
+!.env.template
+.adbc_env
+.DS_Store
+.idea/
+
+# Generated validation results
+validation/artifacts/
+validation-report*.xml
+validation-run*.log
+adbc_oracle_validation_failure_report.md
+*.log
+
+# Local tools and generated demo data
+tools/
+docs/adbc_oracle_driver_demo.pptx
+benchmarks/data/yellow_tripdata_2024-01.parquet
