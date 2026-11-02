@@ -38,7 +38,9 @@ use common::{collect_i32_values, new_connection};
 /// Verifies that the configured fetch batch size splits five rows into 2, 2, and 1-row batches.
 #[test]
 fn test_2400() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query("select cast(level as number(9)) as value from dual connect by level <= 5")
@@ -67,7 +69,9 @@ fn test_2400() {
 /// Verifies that a stream of Arrow record batches binds every row to an Oracle query parameter.
 #[test]
 fn test_2401() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query("select cast(:value as number(9)) as value from dual")

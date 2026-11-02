@@ -39,7 +39,9 @@ use common::{collect_batches, new_connection};
 /// Verifies that a precision-9 integral Oracle NUMBER is fetched as Arrow `Int32`.
 #[test]
 fn test_1100() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query("select cast(123 as number(9, 0)) as value from dual")
@@ -61,7 +63,9 @@ fn test_1100() {
 /// Verifies that a precision-18 integral Oracle NUMBER is fetched as Arrow `Int64`.
 #[test]
 fn test_1101() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query("select cast(123456789012345678 as number(18, 0)) as value from dual")
@@ -83,7 +87,9 @@ fn test_1101() {
 /// Verifies that a scaled Oracle NUMBER is fetched as Arrow `Decimal128` with its scale preserved.
 #[test]
 fn test_1102() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query(
@@ -103,7 +109,9 @@ fn test_1102() {
 /// Verifies that bound Arrow decimals round-trip through a scaled Oracle NUMBER without changing values.
 #[test]
 fn test_1103() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query(
@@ -141,7 +149,9 @@ fn test_1103() {
 /// Verifies Oracle numeric type mappings and values for Int8, Int16, Float32, and Float64 Arrow arrays.
 #[test]
 fn test_1104() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query(

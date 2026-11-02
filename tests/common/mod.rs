@@ -39,7 +39,23 @@ use arrow_array::{
 use arrow_schema::ArrowError;
 use chrono::{NaiveDate, NaiveDateTime};
 
-pub fn new_connection() -> ADBCOracleConnection {
+pub fn new_connection() -> Option<ADBCOracleConnection> {
+    let missing: Vec<_> = [
+        "ADBC_ORACLE_TEST_USERNAME",
+        "ADBC_ORACLE_TEST_PASSWORD",
+        "ADBC_ORACLE_TEST_URI",
+    ]
+    .into_iter()
+    .filter(|name| env::var_os(name).is_none())
+    .collect();
+    if !missing.is_empty() {
+        eprintln!(
+            "Skipping Oracle integration test: unset {}",
+            missing.join(", ")
+        );
+        return None;
+    }
+
     let username = env::var("ADBC_ORACLE_TEST_USERNAME").expect(
         "set ADBC_ORACLE_TEST_USERNAME to run Oracle integration tests",
     );
@@ -61,7 +77,7 @@ pub fn new_connection() -> ADBCOracleConnection {
         .set_option(OptionDatabase::Uri, OptionValue::String(uri))
         .expect("set connect string");
 
-    database.new_connection().expect("connect to Oracle")
+    Some(database.new_connection().expect("connect to Oracle"))
 }
 
 pub fn execute_sql(

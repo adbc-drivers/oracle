@@ -34,7 +34,9 @@ use common::{collect_batches, collect_i32_values, new_connection};
 /// Verifies that an Oracle NUMBER(9) result is fetched as Arrow `Int32`.
 #[test]
 fn test_2100() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query("select cast(123 as number(9)) as value from dual")
@@ -48,7 +50,9 @@ fn test_2100() {
 /// Verifies that bound Arrow `Int32` values round-trip through an Oracle NUMBER(9) parameter.
 #[test]
 fn test_2101() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query("select cast(:value as number(9)) as value from dual")

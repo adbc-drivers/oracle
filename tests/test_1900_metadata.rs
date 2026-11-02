@@ -36,7 +36,9 @@ const OBJECTS_TABLE_NAME: &str = "ADBC_METADATA_OBJECTS";
 /// Verifies that `get_table_schema` reports Oracle column names, Arrow types, and nullability.
 #[test]
 fn test_1900() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
 
     let _ = execute_sql(
         &mut connection,
@@ -76,7 +78,9 @@ fn test_1900() {
 /// Verifies that `get_objects` returns a requested table and its column metadata at column depth.
 #[test]
 fn test_1901() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
 
     let _ = execute_sql(
         &mut connection,
@@ -134,7 +138,9 @@ fn test_1901() {
 /// Verifies that `get_table_types` reports the Oracle table types supported by the driver.
 #[test]
 fn test_1902() {
-    let connection = new_connection();
+    let Some(connection) = new_connection() else {
+        return;
+    };
 
     let reader = connection.get_table_types().expect("get table types");
     let batches = collect_batches(reader);
