@@ -34,7 +34,6 @@ use adbc_core::{
 
 use crate::oracle_options::OracleOptions;
 
-use oracledb;
 use url::{Host, Url};
 
 pub struct ADBCOracleDatabase {
@@ -170,7 +169,7 @@ impl Optionable for ADBCOracleDatabase {
                     Ok(())
                 }
                 _ => Err(Error::with_message_and_status(
-                    format!("Username must be string"),
+                    "Username must be string".to_string(),
                     Status::InvalidArguments,
                 )),
             },
@@ -181,20 +180,20 @@ impl Optionable for ADBCOracleDatabase {
                     Ok(())
                 }
                 _ => Err(Error::with_message_and_status(
-                    format!("Password must be string"),
+                    "Password must be string".to_string(),
                     Status::InvalidArguments,
                 )),
             },
             OptionDatabase::Uri => match value {
                 OptionValue::String(connect_uri) => self.set_uri(&connect_uri),
                 _ => Err(Error::with_message_and_status(
-                    format!("URI must be string"),
+                    "URI must be string".to_string(),
                     Status::InvalidArguments,
                 )),
             },
             OptionDatabase::Other(key) => self.options.set_option(key, value),
             _ => Err(Error::with_message_and_status(
-                format!("Unsupported parameter"),
+                "Unsupported parameter".to_string(),
                 Status::InvalidArguments,
             )),
         }

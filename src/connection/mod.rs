@@ -253,7 +253,7 @@ impl Connection for ADBCOracleConnection {
             Box<dyn arrow_array::RecordBatchReader + Send + 'static>,
             _,
         >::Err(Error::with_message_and_status(
-            format!("Not implemented"),
+            "Not implemented".to_string(),
             Status::NotImplemented,
         ))
     }
@@ -270,7 +270,7 @@ impl Connection for ADBCOracleConnection {
             Box<dyn arrow_array::RecordBatchReader + Send + 'static>,
             _,
         >::Err(Error::with_message_and_status(
-            format!("Not implemented"),
+            "Not implemented".to_string(),
             Status::NotImplemented,
         ))
     }
@@ -322,7 +322,7 @@ impl Connection for ADBCOracleConnection {
             Box<dyn arrow_array::RecordBatchReader + Send + 'static>,
             _,
         >::Err(Error::with_message_and_status(
-            format!("Not implemented"),
+            "Not implemented".to_string(),
             Status::NotImplemented,
         ))
     }
