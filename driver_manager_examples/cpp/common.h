@@ -117,7 +117,7 @@ class AdbcSession {
         &error,
         "AdbcDatabaseSetOption(driver)");
     check_status(
-        AdbcDatabaseSetOption(&database, "entrypoint", "AdbcOracleInit", &error),
+        AdbcDatabaseSetOption(&database, "entrypoint", "AdbcDriverOracleInit", &error),
         &error,
         "AdbcDatabaseSetOption(entrypoint)");
     check_status(

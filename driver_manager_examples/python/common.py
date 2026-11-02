@@ -29,7 +29,7 @@ from pathlib import Path
 
 import adbc_driver_manager
 
-ENTRYPOINT = "AdbcOracleInit"
+ENTRYPOINT = "AdbcDriverOracleInit"
 
 
 def default_driver_name() -> str:
