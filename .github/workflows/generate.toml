@@ -58,5 +58,9 @@ subdir = "."
 [lang.rust.test]
 service-name = "oracle-23ai"
 
-[lang.rust.validation]
-skip = true
+[[lang.rust.validation.configs]]
+service-name = "oracle-23ai"
+vendor-version = "23ai"
+
+[validation.extra-pypi-dependencies]
+hypothesis = ">=6.170,<7"
