@@ -23,9 +23,7 @@
 # -----------------------------------------------------------------------------
 
 import pyarrow
-
 from adbc_driver_manager import dbapi
-
 from common import ENTRYPOINT, driver_path, oracle_credentials, unique_table_name
 
 
@@ -42,42 +40,44 @@ def main() -> None:
         names=["value", "id"],
     )
 
-    with dbapi.connect(
-        driver=driver,
-        entrypoint=ENTRYPOINT,
-        uri=uri,
-        db_kwargs={
-            "username": username,
-            "password": password,
-        },
-        autocommit=False,
-    ) as conn:
-        with conn.cursor() as cursor:
-            try:
-                # The Oracle driver's query execution path is for result sets;
-                # use executemany(..., None) to dispatch DDL via execute_update.
-                cursor.executemany(
-                    f"create table {table_name} (id number(10), value number(10))", None
-                )
-                cursor.executemany("alter session disable parallel dml", None)
-                cursor.executemany(
-                    f"insert into {table_name} (id, value) values (:1, :2)",
-                    seed_batch,
-                )
-                cursor.executemany(
-                    f"update {table_name} set value = :1 where id = :2",
-                    update_batch,
-                )
-                conn.commit()
+    with (
+        dbapi.connect(
+            driver=driver,
+            entrypoint=ENTRYPOINT,
+            uri=uri,
+            db_kwargs={
+                "username": username,
+                "password": password,
+            },
+            autocommit=False,
+        ) as conn,
+        conn.cursor() as cursor,
+    ):
+        try:
+            # The Oracle driver's query execution path is for result sets;
+            # use executemany(..., None) to dispatch DDL via execute_update.
+            cursor.executemany(
+                f"create table {table_name} (id number(10), value number(10))", None
+            )
+            cursor.executemany("alter session disable parallel dml", None)
+            cursor.executemany(
+                f"insert into {table_name} (id, value) values (:1, :2)",
+                seed_batch,
+            )
+            cursor.executemany(
+                f"update {table_name} set value = :1 where id = :2",
+                update_batch,
+            )
+            conn.commit()
 
-                cursor.execute(f"select id, value from {table_name} order by id")
-                result = cursor.fetchall()
-            finally:
-                try:
-                    cursor.executemany(f"drop table {table_name}", None)
-                    conn.commit()
-                except Exception:
-                    pass
+            cursor.execute(f"select id, value from {table_name} order by id")
+            result = cursor.fetchall()
+        finally:
+            try:
+                cursor.executemany(f"drop table {table_name}", None)
+                conn.commit()
+            except Exception:  # noqa: BLE001, S110
+                pass
 
     print(f"Updated table: {table_name}")
     print(f"Rows updated: {update_batch.num_rows}")

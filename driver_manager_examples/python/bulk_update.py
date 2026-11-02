@@ -22,10 +22,8 @@
 # limitations under the License.
 # -----------------------------------------------------------------------------
 
-import pyarrow
-
 import adbc_driver_manager
-
+import pyarrow
 from common import open_database, unique_table_name
 
 
@@ -56,37 +54,36 @@ def main() -> None:
         names=["value", "id"],
     )
 
-    with open_database() as db:
-        with adbc_driver_manager.AdbcConnection(db) as conn:
+    with open_database() as db, adbc_driver_manager.AdbcConnection(db) as conn:
+        try:
+            execute_sql(
+                conn,
+                f"create table {table_name} (id number(10), value number(10))",
+            )
+
+            with adbc_driver_manager.AdbcStatement(conn) as stmt:
+                stmt.set_sql_query(
+                    f"insert into {table_name} (id, value) values (:1, :2)"
+                )
+                stmt.bind(initial_batch)
+                inserted_rowcount = stmt.execute_update()
+            conn.commit()
+
+            with adbc_driver_manager.AdbcStatement(conn) as stmt:
+                stmt.set_sql_query(f"update {table_name} set value = :1 where id = :2")
+                stmt.bind(update_batch)
+                rowcount = stmt.execute_update()
+
+            conn.commit()
+            result = read_query_rows(
+                conn,
+                f"select id, value from {table_name} order by id",
+            )
+        finally:
             try:
-                execute_sql(
-                    conn,
-                    f"create table {table_name} (id number(10), value number(10))",
-                )
-
-                with adbc_driver_manager.AdbcStatement(conn) as stmt:
-                    stmt.set_sql_query(
-                        f"insert into {table_name} (id, value) values (:1, :2)"
-                    )
-                    stmt.bind(initial_batch)
-                    inserted_rowcount = stmt.execute_update()
-                conn.commit()
-
-                with adbc_driver_manager.AdbcStatement(conn) as stmt:
-                    stmt.set_sql_query(f"update {table_name} set value = :1 where id = :2")
-                    stmt.bind(update_batch)
-                    rowcount = stmt.execute_update()
-
-                conn.commit()
-                result = read_query_rows(
-                    conn,
-                    f"select id, value from {table_name} order by id",
-                )
-            finally:
-                try:
-                    execute_sql(conn, f"drop table {table_name}")
-                except Exception:
-                    pass
+                execute_sql(conn, f"drop table {table_name}")
+            except Exception:  # noqa: BLE001, S110
+                pass
 
     print(f"Updated table: {table_name}")
     print(f"Rows inserted: {inserted_rowcount}")

@@ -22,10 +22,8 @@
 # limitations under the License.
 # -----------------------------------------------------------------------------
 
-import pyarrow
-
 import adbc_driver_manager
-
+import pyarrow
 from common import open_database, unique_table_name
 
 
@@ -33,32 +31,31 @@ def main() -> None:
     table_name = unique_table_name("SAMPLE_INGEST")
     batch = pyarrow.record_batch([[10, 20, 30]], names=["value"])
 
-    with open_database() as db:
-        with adbc_driver_manager.AdbcConnection(db) as conn:
+    with open_database() as db, adbc_driver_manager.AdbcConnection(db) as conn:
+        try:
+            with adbc_driver_manager.AdbcStatement(conn) as stmt:
+                stmt.set_options(
+                    **{
+                        adbc_driver_manager.INGEST_OPTION_TARGET_TABLE: table_name,
+                        adbc_driver_manager.INGEST_OPTION_MODE: adbc_driver_manager.INGEST_OPTION_MODE_CREATE,
+                    }
+                )
+                stmt.bind(batch)
+                rowcount = stmt.execute_update()
+
+            conn.commit()
+
+            with adbc_driver_manager.AdbcStatement(conn) as stmt:
+                stmt.set_sql_query(f'select "value" from {table_name} order by "value"')
+                handle, _ = stmt.execute_query()
+                table = pyarrow.RecordBatchReader.from_stream(handle).read_all()
+        finally:
             try:
                 with adbc_driver_manager.AdbcStatement(conn) as stmt:
-                    stmt.set_options(
-                        **{
-                            adbc_driver_manager.INGEST_OPTION_TARGET_TABLE: table_name,
-                            adbc_driver_manager.INGEST_OPTION_MODE: adbc_driver_manager.INGEST_OPTION_MODE_CREATE,
-                        }
-                    )
-                    stmt.bind(batch)
-                    rowcount = stmt.execute_update()
-
-                conn.commit()
-
-                with adbc_driver_manager.AdbcStatement(conn) as stmt:
-                    stmt.set_sql_query(f'select "value" from {table_name} order by "value"')
-                    handle, _ = stmt.execute_query()
-                    table = pyarrow.RecordBatchReader.from_stream(handle).read_all()
-            finally:
-                try:
-                    with adbc_driver_manager.AdbcStatement(conn) as stmt:
-                        stmt.set_sql_query(f"drop table {table_name}")
-                        stmt.execute_update()
-                except Exception:
-                    pass
+                    stmt.set_sql_query(f"drop table {table_name}")
+                    stmt.execute_update()
+            except Exception:  # noqa: BLE001, S110
+                pass
 
     print(f"Created table: {table_name}")
     print(f"Rows inserted: {rowcount}")
