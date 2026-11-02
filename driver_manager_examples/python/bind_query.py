@@ -22,10 +22,8 @@
 # limitations under the License.
 # -----------------------------------------------------------------------------
 
-import pyarrow
-
 import adbc_driver_manager
-
+import pyarrow
 from common import open_database
 
 
@@ -34,13 +32,15 @@ def main() -> None:
         [[7.0], [321.5]],
         names=["value_one", "value_two"],
     )
-    with open_database() as db:
-        with adbc_driver_manager.AdbcConnection(db) as conn:
-            with adbc_driver_manager.AdbcStatement(conn) as stmt:
-                stmt.set_sql_query("select :1 as value_one, :2 as value_two from dual")
-                stmt.bind(batch)
-                handle, _ = stmt.execute_query()
-                table = pyarrow.RecordBatchReader.from_stream(handle).read_all()
+    with (
+        open_database() as db,
+        adbc_driver_manager.AdbcConnection(db) as conn,
+        adbc_driver_manager.AdbcStatement(conn) as stmt,
+    ):
+        stmt.set_sql_query("select :1 as value_one, :2 as value_two from dual")
+        stmt.bind(batch)
+        handle, _ = stmt.execute_query()
+        table = pyarrow.RecordBatchReader.from_stream(handle).read_all()
     print(table.to_pylist())
 
 

@@ -22,29 +22,29 @@
 # limitations under the License.
 # -----------------------------------------------------------------------------
 
-import pyarrow
-
 import adbc_driver_manager
-
+import pyarrow
 from common import driver_path, open_database
 
 
 def main() -> None:
     driver = driver_path()
-    with open_database() as db:
-        with adbc_driver_manager.AdbcConnection(db) as conn:
-            with adbc_driver_manager.AdbcStatement(conn) as stmt:
-                stmt.set_sql_query(
-                    """
-                    select
-                      cast(1 as number(9, 0)) as id,
-                      cast(123.45 as number(10, 2)) as amount
-                    from dual
-                    """
-                )
-                handle, rowcount = stmt.execute_query()
-                reader = pyarrow.RecordBatchReader.from_stream(handle)
-                table = reader.read_all()
+    with (
+        open_database() as db,
+        adbc_driver_manager.AdbcConnection(db) as conn,
+        adbc_driver_manager.AdbcStatement(conn) as stmt,
+    ):
+        stmt.set_sql_query(
+            """
+                select
+                  cast(1 as number(9, 0)) as id,
+                  cast(123.45 as number(10, 2)) as amount
+                from dual
+                """
+        )
+        handle, rowcount = stmt.execute_query()
+        reader = pyarrow.RecordBatchReader.from_stream(handle)
+        table = reader.read_all()
 
     print(f"Driver: {driver}")
     print(f"Row count hint: {rowcount}")
