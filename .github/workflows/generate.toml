@@ -56,7 +56,7 @@ limitations under the License.
 subdir = "."
 
 [lang.rust.test]
-skip = true
+service-name = "oracle-23ai"
 
 [lang.rust.validation]
 skip = true

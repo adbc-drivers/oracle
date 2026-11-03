@@ -55,10 +55,126 @@ permissions:
 
 
 jobs:
+  test:
+    name: "Test/${{ matrix.platform }}_${{ matrix.arch }}"
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - { platform: linux, arch: amd64, runner: ubuntu-latest }
+          - { platform: macos, arch: arm64, runner: macos-latest }
+          - { platform: windows, arch: amd64, runner: windows-latest }
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: free up disk space
+        if: runner.os != 'Windows'
+        run: |
+          # Preinstalled tools use a lot of disk space, free up some space
+          # https://github.com/actions/runner-images/issues/2840
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          submodules: 'recursive'
+
+      - uses: actions-rust-lang/setup-rust-toolchain@ecabd13d1c56bd1345c230e542e9144811ad706f  # v2.0.0
+        with:
+          cache: false
+          components: "clippy"
+
+      - uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e  # v0.11.3
+        with:
+          pixi-version: v0.83.0
+          run-install: false
+
+
+      - name: Log in to ghcr.io
+        if: runner.os == 'Linux'
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "$GHCR_TOKEN" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
+
+      - name: Build
+        working-directory: .
+        run: |
+          if [[ -f ci/scripts/pre-build.sh ]]; then
+            echo "Loading pre-build"
+            ./ci/scripts/pre-build.sh test ${{ matrix.platform }} ${{ matrix.arch }}
+          fi
+
+          set -a
+          if [[ -f .env.build ]]; then
+            echo "Loading .env.build"
+            source .env.build
+          fi
+          set +a
+
+          cargo build --locked
+
+      - name: Start Test Dependencies
+        # Can't use Docker on macOS AArch64 runners, and Windows containers
+        # work but often the container doesn't support Windows
+        if: runner.os == 'Linux'
+        working-directory: .
+        run: |
+          if [[ -f compose.yaml ]]; then
+            if ! docker compose up --detach --wait oracle-23ai; then
+              echo "Service failed to start"
+              echo "Logs:"
+              docker compose logs oracle-23ai
+              exit 1
+            fi
+          fi
+
+      - name: Test
+        working-directory: .
+        run: |
+          set -a
+          if [[ -f .env ]]; then
+            source .env
+          fi
+          if [[ -f .env.${{ matrix.platform }} ]]; then
+            source .env.${{ matrix.platform }}
+          fi
+          if [[ -f .env.ci ]]; then
+            source .env.ci
+          fi
+          set +a
+
+          if [[ -f ci/scripts/pre-test.sh ]]; then
+            echo "Loading pre-test"
+            ./ci/scripts/pre-test.sh ${{ matrix.platform }} ${{ matrix.arch }} "oracle-23ai"
+          fi
+
+          # if pre-test.sh needs to override env vars, it can generate this file
+          set -a
+          if [[ -f .env.override ]]; then
+            source .env.override
+          fi
+          set +a
+
+          if [[ "$RUNNER_OS" == "macOS" ]]; then
+            /usr/bin/perl -e 'alarm shift; exec @ARGV' 900 cargo test
+          else
+            timeout 15m cargo test
+          fi
+
+
+      - name: clippy
+        working-directory: .
+        run: |
+          cargo clippy --locked --no-deps -- -A unused_variables -D warnings
 
 
   build:
     name: "Build oracle/${{ matrix.platform }}_${{ matrix.arch }}"
+    needs: test
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: true
