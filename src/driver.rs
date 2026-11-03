@@ -31,8 +31,6 @@ use adbc_core::{
     options::{OptionDatabase, OptionValue},
 };
 
-use oracledb;
-
 #[derive(Default)]
 pub struct ADBCOracleDriver {}
 

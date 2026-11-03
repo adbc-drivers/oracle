@@ -339,7 +339,7 @@ impl Statement for ADBCOracleStatement {
     /// Reports that partitioned statement execution is unsupported.
     fn execute_partitions(&mut self) -> Result<PartitionedResult> {
         Err(Error::with_message_and_status(
-            format!("Not implemented"),
+            "Not implemented".to_string(),
             Status::NotImplemented,
         ))
     }
@@ -433,7 +433,7 @@ impl Statement for ADBCOracleStatement {
     /// Reports that parameter-schema discovery is unsupported.
     fn get_parameter_schema(&self) -> Result<arrow_schema::Schema> {
         Err(Error::with_message_and_status(
-            format!("Not implemented"),
+            "Not implemented".to_string(),
             Status::NotImplemented,
         ))
     }
@@ -460,7 +460,7 @@ impl Statement for ADBCOracleStatement {
     /// Reports that Substrait plans are unsupported.
     fn set_substrait_plan(&mut self, _plan: impl AsRef<[u8]>) -> Result<()> {
         Err(Error::with_message_and_status(
-            format!("Not implemented"),
+            "Not implemented".to_string(),
             Status::NotImplemented,
         ))
     }
