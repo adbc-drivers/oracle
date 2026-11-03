@@ -57,11 +57,10 @@ repos:
     exclude: '\.(bat|sln)$'
   - id: trailing-whitespace
 
-# Not yet enabled
-# - repo: https://github.com/adbc-drivers/dev
-#   rev: 9828b55d6941a1d8139350567dba053a6946465d
-#   hooks:
-#   - id: rat
+- repo: https://github.com/adbc-drivers/dev
+  rev: 0c94e3235eee46cc3ace6aa63daa203f3abcf53d  # frozen: v0.1.0
+  hooks:
+  - id: rat
 
 - repo: local
   hooks:
