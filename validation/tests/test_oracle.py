@@ -124,6 +124,8 @@ def test_ingest_json(driver, conn, coltype: str) -> None:
         cursor.adbc_statement.set_options(**{"oracle.ingest.struct_type": coltype})
         cursor.adbc_ingest("test_ingest_json", data, mode="replace")
 
-    with conn.cursor() as cursor:
-        with pytest.raises(conn.IntegrityError, match="check constraint.*violated"):
-            cursor.execute("""INSERT INTO "test_ingest_json" VALUES (4, '<>')""")
+    with (
+        conn.cursor() as cursor,
+        pytest.raises(conn.IntegrityError, match="check constraint.*violated"),
+    ):
+        cursor.execute("""INSERT INTO "test_ingest_json" VALUES (4, '<>')""")

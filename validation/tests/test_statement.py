@@ -139,7 +139,9 @@ def test_option_read_batch_rows(driver, conn) -> None:
         with pytest.raises(StopIteration):
             reader.read_next_batch()
 
-        cursor.adbc_statement.set_options(**{"oracle.statement.read_batch_rows": "50000"})
+        cursor.adbc_statement.set_options(
+            **{"oracle.statement.read_batch_rows": "50000"}
+        )
         cursor.execute("SELECT IDX FROM TEST_BATCH_ROWS")
         reader = cursor.fetch_record_batch()
         assert len(reader.read_next_batch()) == 50000
@@ -147,7 +149,9 @@ def test_option_read_batch_rows(driver, conn) -> None:
         with pytest.raises(StopIteration):
             reader.read_next_batch()
 
-        cursor.adbc_statement.set_options(**{"oracle.statement.read_batch_rows": "21000"})
+        cursor.adbc_statement.set_options(
+            **{"oracle.statement.read_batch_rows": "21000"}
+        )
         cursor.execute("SELECT IDX FROM TEST_BATCH_ROWS")
         reader = cursor.fetch_record_batch()
         assert len(reader.read_next_batch()) == 21000
@@ -233,7 +237,9 @@ def test_out_of_range_timestamp(driver, conn, unit: str, sign: int) -> None:
 def test_implicit_result_set(driver, conn) -> None:
     query = """DECLARE c SYS_REFCURSOR; BEGIN OPEN c FOR SELECT 1 AS RESULT FROM DUAL; DBMS_SQL.RETURN_RESULT(c); END;"""
     with conn.cursor() as cursor:
-        cursor.adbc_statement.set_options(**{"oracle.statement.execution_mode": "batch"})
+        cursor.adbc_statement.set_options(
+            **{"oracle.statement.execution_mode": "batch"}
+        )
         cursor.execute(query)
         assert cursor.fetchall() == [(1,)]
 
@@ -242,7 +248,9 @@ def test_implicit_result_set_procedure(driver, conn) -> None:
     setup = "CREATE OR REPLACE PROCEDURE SP_GET_NOTES_DEMO (P_CURSOR OUT SYS_REFCURSOR) AS BEGIN OPEN P_CURSOR FOR SELECT 'HELLO WORLD' AS GREETING FROM DUAL; END;"
     query = """DECLARE c SYS_REFCURSOR; BEGIN SP_GET_NOTES_DEMO(c); DBMS_SQL.RETURN_RESULT(c); END;"""
     with conn.cursor() as cursor:
-        cursor.adbc_statement.set_options(**{"oracle.statement.execution_mode": "batch"})
+        cursor.adbc_statement.set_options(
+            **{"oracle.statement.execution_mode": "batch"}
+        )
         cursor.execute(setup)
         cursor.execute(query)
         assert cursor.fetchall() == [("HELLO WORLD",)]
@@ -267,7 +275,9 @@ def test_implicit_result_set_manyrow(driver, conn) -> None:
     END;"""
     with conn.cursor() as cursor:
         driver.try_drop_table(cursor, table_name="SAMPLE")
-        cursor.adbc_statement.set_options(**{"oracle.statement.execution_mode": "batch"})
+        cursor.adbc_statement.set_options(
+            **{"oracle.statement.execution_mode": "batch"}
+        )
         for q in setup:
             cursor.execute(q)
         cursor.execute(query, (3,))
@@ -285,7 +295,9 @@ def test_implicit_result_set_multiple(driver, conn) -> None:
     DBMS_SQL.RETURN_RESULT(d);
     END;"""
     with conn.cursor() as cursor:
-        cursor.adbc_statement.set_options(**{"oracle.statement.execution_mode": "batch"})
+        cursor.adbc_statement.set_options(
+            **{"oracle.statement.execution_mode": "batch"}
+        )
         cursor.execute(query)
         assert cursor.fetchall() == [(1,)]
 
@@ -294,7 +306,9 @@ def test_out_parameters(driver, conn) -> None:
     setup = "CREATE OR REPLACE PROCEDURE SP_GET_OUT_DEMO (p1 IN NVARCHAR2, reply OUT NVARCHAR2) AS BEGIN reply := 'HELLO, ' || p1; END;"
     query = """BEGIN SP_GET_OUT_DEMO(:1, :2); END;"""
     with conn.cursor() as cursor:
-        cursor.adbc_statement.set_options(**{"oracle.statement.execution_mode": "batch"})
+        cursor.adbc_statement.set_options(
+            **{"oracle.statement.execution_mode": "batch"}
+        )
         cursor.execute(setup)
         params = pyarrow.record_batch(
             {"p1": ["WORLD"], "reply": [None]},
@@ -383,14 +397,14 @@ class OutParameterTypeTest:
             oracle_type="DATE",
             oracle_literal="DATE '1970-01-02'",
             arrow_type=pyarrow.timestamp("us"),
-            expected_value=datetime.datetime(1970, 1, 2),  # noqa: DTZ001
+            expected_value=datetime.datetime(1970, 1, 2),
         ),
         OutParameterTypeTest(
             name="timestamp",
             oracle_type="TIMESTAMP",
             oracle_literal="TIMESTAMP '2026-05-20 10:30:00'",
             arrow_type=pyarrow.timestamp("us"),
-            expected_value=datetime.datetime(2026, 5, 20, 10, 30, 0),  # noqa: DTZ001
+            expected_value=datetime.datetime(2026, 5, 20, 10, 30, 0),
         ),
         OutParameterTypeTest(
             name="timestamp_tz",
@@ -398,7 +412,7 @@ class OutParameterTypeTest:
             oracle_literal="TO_TIMESTAMP_TZ('2026-05-20 10:30:00 +02:00', 'YYYY-MM-DD HH24:MI:SS TZH:TZM')",
             arrow_type=pyarrow.timestamp("us", tz="UTC"),
             expected_value=datetime.datetime(
-                2026, 5, 20, 8, 30, 0, tzinfo=datetime.timezone.utc
+                2026, 5, 20, 8, 30, 0, tzinfo=datetime.UTC
             ),
         ),
         OutParameterTypeTest(
@@ -520,7 +534,9 @@ END;
 """
     query = """DECLARE c SYS_REFCURSOR; BEGIN SP_MULTI(:1, c); DBMS_SQL.RETURN_RESULT(c); END;"""
     with conn.cursor() as cursor:
-        cursor.adbc_statement.set_options(**{"oracle.statement.execution_mode": "batch"})
+        cursor.adbc_statement.set_options(
+            **{"oracle.statement.execution_mode": "batch"}
+        )
         cursor.execute(setup)
         params = pyarrow.record_batch(
             {"reply": [None]},
@@ -546,7 +562,9 @@ def test_out_parameters_inout(driver, conn) -> None:
     setup = "CREATE OR REPLACE PROCEDURE SP_INOUT_DEMO (val IN OUT NUMBER) AS BEGIN val := val * 2; END;"
     query = """BEGIN SP_INOUT_DEMO(:1); END;"""
     with conn.cursor() as cursor:
-        cursor.adbc_statement.set_options(**{"oracle.statement.execution_mode": "batch"})
+        cursor.adbc_statement.set_options(
+            **{"oracle.statement.execution_mode": "batch"}
+        )
         cursor.execute(setup)
         params = pyarrow.record_batch(
             {"val": [21]},

@@ -35,9 +35,7 @@ def driver_path(driver: adbc_drivers_validation.model.DriverQuirks) -> str:
         "darwin": "dylib",
     }.get(sys.platform, "so")
     library = "adbc_oracle.dll" if sys.platform == "win32" else f"libadbc_oracle.{ext}"
-    return str(
-        Path(__file__).parent.parent.parent / "target" / "release" / library
-    )
+    return str(Path(__file__).parent.parent.parent / "target" / "release" / library)
 
 
 def pytest_collection_modifyitems(

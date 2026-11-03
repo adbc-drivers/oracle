@@ -23,7 +23,6 @@
 # -----------------------------------------------------------------------------
 
 from adbc_driver_manager import dbapi
-
 from common import ENTRYPOINT, driver_path, oracle_credentials
 
 
@@ -38,20 +37,22 @@ def main() -> None:
         from dual
     """
 
-    with dbapi.connect(
-        driver=driver,
-        entrypoint=ENTRYPOINT,
-        uri=uri,
-        db_kwargs={
-            "username": username,
-            "password": password,
-        },
-        autocommit=True,
-    ) as conn:
-        with conn.cursor() as cursor:
-            cursor.execute(query)
-            column_names = [column[0] for column in cursor.description]
-            rows = cursor.fetchall()
+    with (
+        dbapi.connect(
+            driver=driver,
+            entrypoint=ENTRYPOINT,
+            uri=uri,
+            db_kwargs={
+                "username": username,
+                "password": password,
+            },
+            autocommit=True,
+        ) as conn,
+        conn.cursor() as cursor,
+    ):
+        cursor.execute(query)
+        column_names = [column[0] for column in cursor.description]
+        rows = cursor.fetchall()
 
     print(f"Driver: {driver}")
     print("Columns:", ", ".join(column_names))
