@@ -26,13 +26,12 @@ updates:
     commit-message:
       prefix: "chore: "
     directory: "/"
-    groups:
-      arrow-adbc:
-        applies-to: version-updates
-        patterns:
-          - "arrow"
-          - "arrow-*"
-          - "adbc_*"
+    ignore:
+      # oracledb pins arrow, so avoid dependabot updating them - they need to
+      # be updated in lockstep
+      - dependency-name: "arrow*"
+      - dependency-name: "arrow-*"
+      - dependency-name: "oracledb"
     schedule:
       interval: "weekly"
     cooldown:
