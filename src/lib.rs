@@ -39,4 +39,4 @@ pub use crate::statement::{
     STATEMENT_OPTION_FETCH_ARRAY_SIZE, STATEMENT_OPTION_PREFETCH_ROWS,
 };
 
-adbc_ffi::export_driver!(AdbcOracleInit, ADBCOracleDriver);
+adbc_ffi::export_driver!(AdbcDriverOracleInit, ADBCOracleDriver);

@@ -16,7 +16,7 @@ The shared library is generated in `target/release/`:
 - Linux: `libadbc_oracle.so`
 - Windows: `adbc_oracle.dll`
 
-The driver entry point is `AdbcOracleInit`.
+The driver entry point is `AdbcDriverOracleInit`.
 
 ## Quick Start
 

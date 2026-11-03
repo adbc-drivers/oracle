@@ -127,7 +127,7 @@ func openConnection(ctx context.Context) (adbc.Database, adbc.Connection, error)
 
 	database, err := (drivermgr.Driver{}).NewDatabase(map[string]string{
 		"driver":     driver,
-		"entrypoint": "AdbcOracleInit",
+		"entrypoint": "AdbcDriverOracleInit",
 		"username":   username,
 		"password":   password,
 		"uri":        uri,
