@@ -44,6 +44,7 @@ python = ">=3.14.3,<3.15"
 
 [pypi-dependencies]
 adbc-drivers-dev = { git = "https://github.com/adbc-drivers/dev" }
+hypothesis = ">=6.170,<7"
 
 [target.linux-64.pypi-dependencies]
 adbc-drivers-validation = { git = "https://github.com/adbc-drivers/validation" }

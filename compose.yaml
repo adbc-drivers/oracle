@@ -34,7 +34,7 @@ services:
     healthcheck:
       test:
         - CMD-SHELL
-        - "printf 'WHENEVER SQLERROR EXIT FAILURE\nSELECT 1 FROM dual;\nEXIT;\n' | sqlplus -L -s validation/password@localhost:1521/FREEPDB1"
+        - "printf 'WHENEVER SQLERROR EXIT FAILURE\nSELECT 1 FROM dual;\nEXIT;\n' | sqlplus -L -s validation/password@localhost:1521/pdbvalidation"
       start_period: 0s
       interval: 5s
       timeout: 5s

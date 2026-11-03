@@ -35,8 +35,6 @@ class Oracle26Quirks(model.DriverQuirks):
     driver = "adbc_driver_oracle"
     driver_name = "ADBC Driver for Oracle Database"
     vendor_name = "Oracle Database"
-    # rust-oracledb exposes the numeric Oracle server version through
-    # Connection::version(), rather than the legacy godror-formatted string.
     vendor_version = re.compile(r"23\.26\.\d+\.\d+\.\d+")
     short_version = "26ai"
     features = model.DriverFeatures(
@@ -61,9 +59,9 @@ class Oracle26Quirks(model.DriverQuirks):
     )
     setup = model.DriverSetup(
         database={
-            "uri": model.FromEnv("ORACLE_URI"),
-            "username": model.FromEnv("ORACLE_USER"),
-            "password": model.FromEnv("ORACLE_PASSWORD"),
+            "uri": model.FromEnv("ADBC_ORACLE_TEST_URI"),
+            "username": model.FromEnv("ADBC_ORACLE_TEST_USERNAME"),
+            "password": model.FromEnv("ADBC_ORACLE_TEST_PASSWORD"),
         },
         connection={},
         statement={},
@@ -198,9 +196,7 @@ class Oracle26Quirks(model.DriverQuirks):
 
 
 class Oracle23Quirks(Oracle26Quirks):
-    vendor_version = re.compile(
-        r"23\.5\.0\.24\.7 \[Oracle Database 23ai Free Release 23\.0\.0\.0\.0 - Develop, Learn, and Run for Free; Version 23\.5\.0\.24\.07\] - Instant Client 23\.26\.0\.0\.0 - godror [a-z0-9\-\.]+\+ODPI-6\.0\.0"
-    )
+    vendor_version = re.compile(r"23\.5\.\d+\.\d+\.\d+")
     short_version = "23ai"
 
 
