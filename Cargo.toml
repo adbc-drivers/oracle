@@ -30,7 +30,7 @@ license = "UPL-1.0 OR Apache-2.0"
 
 [dependencies]
 adbc_core = "0.24.0"
-adbc_ffi = "0.24.0"
+adbc_ffi = "0.25.0"
 arrow = "59.3.2"
 arrow-array = "59.3.2"
 arrow-schema = "59.3.2"
