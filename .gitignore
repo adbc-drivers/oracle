@@ -60,6 +60,7 @@ htmlcov/
 .idea/
 
 # Generated validation results
+generated/
 validation/artifacts/
 validation-report*.xml
 validation-run*.log
