@@ -26,4 +26,5 @@ THIRD_PARTY_LICENSES.txt
 .codespellignore
 Cargo.lock
 driver_manager_examples/go/go.sum
+pixi.lock
 validation/known-failures.txt

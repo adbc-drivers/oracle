@@ -45,7 +45,9 @@ fn unique_table_name(prefix: &str) -> String {
 /// Verifies that one bound Arrow batch bulk-inserts all rows and reports the affected-row count.
 #[test]
 fn test_2000() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
 
     let table_name = unique_table_name("ADBC_BULK_INSERT");
     let _ = execute_sql(&mut connection, &format!("drop table {table_name}"));
@@ -93,7 +95,9 @@ fn test_2000() {
 /// Verifies that one bound Arrow batch bulk-updates matching rows using multiple parameters.
 #[test]
 fn test_2001() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
 
     let table_name = unique_table_name("ADBC_BULK_UPDATE");
     let _ = execute_sql(&mut connection, &format!("drop table {table_name}"));

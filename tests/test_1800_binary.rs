@@ -34,7 +34,9 @@ use common::{collect_batches, collect_binary_values, new_connection};
 /// Verifies that an Oracle RAW result is fetched as Arrow binary bytes.
 #[test]
 fn test_1800() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query("select hextoraw('DEADBEEF') as value from dual")
@@ -51,7 +53,9 @@ fn test_1800() {
 /// Verifies that a bound Arrow `BinaryArray` round-trips through an Oracle RAW parameter.
 #[test]
 fn test_1801() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query("select cast(:value as raw(4)) as value from dual")
@@ -82,7 +86,9 @@ fn test_1801() {
 /// Verifies that a bound Arrow `LargeBinaryArray` is accepted for an Oracle RAW parameter.
 #[test]
 fn test_1802() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query("select cast(:value as raw(4)) as value from dual")
