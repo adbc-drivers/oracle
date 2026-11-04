@@ -66,10 +66,10 @@ use std::env;
 
 use adbc_core::options::OptionDatabase;
 use adbc_core::{Connection, Database, Driver, Optionable, Statement};
-use adbc_oracle::ADBCOracleDriver;
+use adbc_oracle::OracleDriver;
 
 fn main() -> adbc_core::error::Result<()> {
-    let mut driver = ADBCOracleDriver::default();
+    let mut driver = OracleDriver::default();
     let mut database = driver.new_database()?;
     database.set_option(
         OptionDatabase::Username,

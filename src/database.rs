@@ -22,7 +22,7 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-use super::connection::ADBCOracleConnection;
+use super::connection::OracleConnection;
 
 use std::sync::{Arc, atomic::AtomicBool};
 
@@ -36,12 +36,12 @@ use crate::oracle_options::OracleOptions;
 
 use url::{Host, Url};
 
-pub struct ADBCOracleDatabase {
+pub struct OracleDatabase {
     pub(crate) config: oracledb::Config,
     pub(crate) options: OracleOptions,
 }
 
-impl ADBCOracleDatabase {
+impl OracleDatabase {
     /// Applies an Oracle URI or native connect string to the connection
     /// configuration.
     fn set_uri(&mut self, connect_uri: &str) -> Result<()> {
@@ -108,7 +108,7 @@ impl ADBCOracleDatabase {
     }
 }
 
-impl Optionable for ADBCOracleDatabase {
+impl Optionable for OracleDatabase {
     type Option = OptionDatabase;
 
     /// Rejects byte-valued database option requests.
@@ -200,8 +200,8 @@ impl Optionable for ADBCOracleDatabase {
     }
 }
 
-impl Database for ADBCOracleDatabase {
-    type ConnectionType = ADBCOracleConnection;
+impl Database for OracleDatabase {
+    type ConnectionType = OracleConnection;
 
     /// Opens an Oracle connection with inherited options and autocommit
     /// enabled.

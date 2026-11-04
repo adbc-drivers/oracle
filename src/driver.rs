@@ -22,7 +22,7 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-use super::database::ADBCOracleDatabase;
+use super::database::OracleDatabase;
 use crate::oracle_options::OracleOptions;
 
 use adbc_core::{
@@ -32,10 +32,10 @@ use adbc_core::{
 };
 
 #[derive(Default)]
-pub struct ADBCOracleDriver {}
+pub struct OracleDriver {}
 
-impl Driver for ADBCOracleDriver {
-    type DatabaseType = ADBCOracleDatabase;
+impl Driver for OracleDriver {
+    type DatabaseType = OracleDatabase;
 
     /// Creates a database handle with default connection configuration and
     /// options.

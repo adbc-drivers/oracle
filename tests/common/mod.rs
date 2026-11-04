@@ -30,7 +30,7 @@ use adbc_core::{
     Connection, Database, Driver, Optionable, Statement,
     options::{OptionDatabase, OptionValue},
 };
-use adbc_oracle::{ADBCOracleConnection, ADBCOracleDriver};
+use adbc_oracle::{OracleConnection, OracleDriver};
 use arrow_array::Decimal128Array;
 use arrow_array::{
     BinaryArray, BooleanArray, Float32Array, Float64Array, Int32Array,
@@ -39,7 +39,7 @@ use arrow_array::{
 use arrow_schema::ArrowError;
 use chrono::{NaiveDate, NaiveDateTime};
 
-pub fn new_connection() -> Option<ADBCOracleConnection> {
+pub fn new_connection() -> Option<OracleConnection> {
     let missing: Vec<_> = [
         "ADBC_ORACLE_TEST_USERNAME",
         "ADBC_ORACLE_TEST_PASSWORD",
@@ -65,7 +65,7 @@ pub fn new_connection() -> Option<ADBCOracleConnection> {
     let uri = env::var("ADBC_ORACLE_TEST_URI")
         .expect("set ADBC_ORACLE_TEST_URI to run Oracle integration tests");
 
-    let mut driver = ADBCOracleDriver::default();
+    let mut driver = OracleDriver::default();
     let mut database = driver.new_database().expect("create database handle");
     database
         .set_option(OptionDatabase::Username, OptionValue::String(username))
@@ -81,7 +81,7 @@ pub fn new_connection() -> Option<ADBCOracleConnection> {
 }
 
 pub fn execute_sql(
-    connection: &mut ADBCOracleConnection,
+    connection: &mut OracleConnection,
     sql: &str,
 ) -> adbc_core::error::Result<()> {
     let mut statement = connection.new_statement().expect("create statement");
