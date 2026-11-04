@@ -37,7 +37,9 @@ use common::{
 /// Verifies that Arrow Date64 values bind to Oracle DATE and Oracle truncates fractional seconds.
 #[test]
 fn test_1400() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query("select cast(:value as date) as value from dual")

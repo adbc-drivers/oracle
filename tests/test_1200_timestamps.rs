@@ -37,7 +37,9 @@ use common::{
 /// Verifies that an Oracle TIMESTAMP result preserves microsecond precision when fetched as Arrow.
 #[test]
 fn test_1200() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query(
@@ -57,7 +59,9 @@ fn test_1200() {
 /// Verifies that bound Arrow microsecond timestamps round-trip through an Oracle TIMESTAMP parameter.
 #[test]
 fn test_1201() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query("select cast(:value as timestamp) as value from dual")

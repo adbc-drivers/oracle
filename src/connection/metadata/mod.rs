@@ -52,6 +52,8 @@ use crate::sql::SqlBuilder;
 const DRIVER_NAME: &str = "ADBC Driver for Oracle Database";
 const VENDOR_NAME: &str = "Oracle Database";
 
+type SchemaTable = (Option<String>, String);
+
 struct ColumnObject {
     column_name: String,
     ordinal_position: i32,
@@ -250,7 +252,7 @@ impl<'a> Metadata<'a> {
         schema_filter: Option<&str>,
         table_filter: Option<&str>,
         column_filter: Option<&str>,
-    ) -> Result<BTreeMap<(Option<String>, String), Vec<ColumnObject>>> {
+    ) -> Result<BTreeMap<SchemaTable, Vec<ColumnObject>>> {
         let query = SqlBuilder::column_metadata()
             .like("owner", schema_filter)
             .like("table_name", table_filter)
@@ -260,8 +262,7 @@ impl<'a> Metadata<'a> {
             .conn
             .query(&query.build(), &constraint_bind_params)
             .map_err(oracledb_error_to_adbc_error)?;
-        let mut columns =
-            BTreeMap::<(Option<String>, String), Vec<ColumnObject>>::new();
+        let mut columns = BTreeMap::<SchemaTable, Vec<ColumnObject>>::new();
         for row in &mut cursor {
             let row = row.map_err(oracledb_error_to_adbc_error)?;
             let schema_name = row
@@ -320,8 +321,7 @@ impl<'a> Metadata<'a> {
         schema_filter: Option<&str>,
         table_filter: Option<&str>,
         current_catalog: &str,
-    ) -> Result<BTreeMap<(Option<String>, String), Vec<ConstraintObject>>>
-    {
+    ) -> Result<BTreeMap<SchemaTable, Vec<ConstraintObject>>> {
         let query = SqlBuilder::constraints()
             .like("c.owner", schema_filter)
             .like("c.table_name", table_filter);
@@ -331,7 +331,7 @@ impl<'a> Metadata<'a> {
             .query(&query.build(), &foreign_key_bind_params)
             .map_err(oracledb_error_to_adbc_error)?;
         let mut constraints =
-            BTreeMap::<(Option<String>, String), Vec<ConstraintObject>>::new();
+            BTreeMap::<SchemaTable, Vec<ConstraintObject>>::new();
         for row in &mut cursor {
             let row = row.map_err(oracledb_error_to_adbc_error)?;
             let schema_name = row

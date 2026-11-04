@@ -1,24 +1,55 @@
-# ADBC Oracle Driver
+<!-----------------------------------------------------------------------------
+  Copyright (c) 2026 ADBC Drivers Contributors
+
+  This software is dual-licensed to you under the Universal Permissive License
+  (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl and Apache License
+  2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose
+  either license.
+
+  If you elect to accept the software under the Apache License, Version 2.0,
+  the following applies:
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+     https://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  ----------------------------------------------------------------------------->
+
+# ADBC Driver for Oracle Database
 
 An [ADBC](https://arrow.apache.org/adbc/) driver for Oracle Database, written in
 Rust. Query results and statement binds use Apache Arrow. Use the crate directly
 from Rust or load the shared library through an ADBC driver manager.
 
-## Build
+## Installation
+
+Pre-packaged builds of the drivers in this repo will be made available for
+various platforms from the [Columnar](https://columnar.tech) CDN. These can be
+installed by any tool that supports [ADBC](https://arrow.apache.org/adbc/)
+Driver Manifests, such as [dbc](https://columnar.tech/dbc):
 
 ```sh
-cargo build --release
+dbc install oracle --pre
 ```
 
-The shared library is generated in `target/release/`:
+See [Building](#building) if you would rather build the drivers yourself.
 
-- macOS: `libadbc_oracle.dylib`
-- Linux: `libadbc_oracle.so`
-- Windows: `adbc_oracle.dll`
+## Building
 
-The driver entry point is `AdbcOracleInit`.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Quick Start
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Quick Start (Rust)
 
 Set the connection environment variables:
 
@@ -35,10 +66,10 @@ use std::env;
 
 use adbc_core::options::OptionDatabase;
 use adbc_core::{Connection, Database, Driver, Optionable, Statement};
-use adbc_oracle::ADBCOracleDriver;
+use adbc_oracle::OracleDriver;
 
 fn main() -> adbc_core::error::Result<()> {
-    let mut driver = ADBCOracleDriver::default();
+    let mut driver = OracleDriver::default();
     let mut database = driver.new_database()?;
     database.set_option(
         OptionDatabase::Username,
@@ -80,14 +111,3 @@ The bulk examples require permission to create tables in the user's schema.
 
 For Python, Go, and C++, see the
 [driver-manager examples](driver_manager_examples/README.md).
-
-## Tests
-
-Set `ADBC_ORACLE_TEST_USERNAME`, `ADBC_ORACLE_TEST_PASSWORD`, and
-`ADBC_ORACLE_TEST_URI` for the test database, then run:
-
-```sh
-cargo test --tests
-```
-
-See [validation/README.md](validation/README.md) for the ADBC validation suite.

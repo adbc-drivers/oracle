@@ -1,4 +1,26 @@
-# Copyright (c) 2025 Columnar Technologies Inc.  All rights reserved.
+# -----------------------------------------------------------------------------
+# Copyright (c) 2026 ADBC Drivers Contributors
+#
+# This software is dual-licensed to you under the Universal Permissive License
+# (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl and Apache License
+# 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose
+# either license.
+#
+# If you elect to accept the software under the Apache License, Version 2.0,
+# the following applies:
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# -----------------------------------------------------------------------------
 
 import functools
 import re
@@ -13,8 +35,6 @@ class Oracle26Quirks(model.DriverQuirks):
     driver = "adbc_driver_oracle"
     driver_name = "ADBC Driver for Oracle Database"
     vendor_name = "Oracle Database"
-    # rust-oracledb exposes the numeric Oracle server version through
-    # Connection::version(), rather than the legacy godror-formatted string.
     vendor_version = re.compile(r"23\.26\.\d+\.\d+\.\d+")
     short_version = "26ai"
     features = model.DriverFeatures(
@@ -39,9 +59,9 @@ class Oracle26Quirks(model.DriverQuirks):
     )
     setup = model.DriverSetup(
         database={
-            "uri": model.FromEnv("ORACLE_URI"),
-            "username": model.FromEnv("ORACLE_USER"),
-            "password": model.FromEnv("ORACLE_PASSWORD"),
+            "uri": model.FromEnv("ADBC_ORACLE_TEST_URI"),
+            "username": model.FromEnv("ADBC_ORACLE_TEST_USERNAME"),
+            "password": model.FromEnv("ADBC_ORACLE_TEST_PASSWORD"),
         },
         connection={},
         statement={},
@@ -176,9 +196,7 @@ class Oracle26Quirks(model.DriverQuirks):
 
 
 class Oracle23Quirks(Oracle26Quirks):
-    vendor_version = re.compile(
-        r"23\.5\.0\.24\.7 \[Oracle Database 23ai Free Release 23\.0\.0\.0\.0 - Develop, Learn, and Run for Free; Version 23\.5\.0\.24\.07\] - Instant Client 23\.26\.0\.0\.0 - godror [a-z0-9\-\.]+\+ODPI-6\.0\.0"
-    )
+    vendor_version = re.compile(r"23\.5\.\d+\.\d+\.\d+")
     short_version = "23ai"
 
 

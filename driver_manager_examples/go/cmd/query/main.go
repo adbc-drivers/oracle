@@ -42,7 +42,7 @@ import (
 
 const (
 	driverName = "adbc-oracle"
-	entryPoint = "AdbcOracleInit"
+	entryPoint = "AdbcDriverOracleInit"
 )
 
 var registerDriver sync.Once

@@ -34,7 +34,9 @@ use common::{collect_batches, collect_i64_values, new_connection};
 /// Verifies that an Oracle NUMBER(18) result is fetched as Arrow `Int64`.
 #[test]
 fn test_2200() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query(
@@ -50,7 +52,9 @@ fn test_2200() {
 /// Verifies that bound Arrow `Int64` values round-trip through an Oracle NUMBER(18) parameter.
 #[test]
 fn test_2201() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query("select cast(:value as number(18)) as value from dual")

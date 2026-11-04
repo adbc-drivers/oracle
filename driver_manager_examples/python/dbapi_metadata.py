@@ -23,7 +23,6 @@
 # -----------------------------------------------------------------------------
 
 from adbc_driver_manager import dbapi
-
 from common import ENTRYPOINT, driver_path, oracle_credentials
 
 

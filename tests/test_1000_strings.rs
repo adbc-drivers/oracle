@@ -34,7 +34,9 @@ use common::{collect_batches, collect_string_values, new_connection};
 /// Verifies that an Oracle VARCHAR2 result is returned as Arrow UTF-8 text.
 #[test]
 fn test_1000() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query(
@@ -50,7 +52,9 @@ fn test_1000() {
 /// Verifies that a bound Arrow `StringArray` is sent to Oracle and returned unchanged.
 #[test]
 fn test_1001() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query(
@@ -80,7 +84,9 @@ fn test_1001() {
 /// Verifies that a bound Arrow `LargeStringArray` is accepted for a VARCHAR2 parameter.
 #[test]
 fn test_1002() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query(

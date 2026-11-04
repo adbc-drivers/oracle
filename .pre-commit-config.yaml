@@ -1,0 +1,72 @@
+# -----------------------------------------------------------------------------
+# Copyright (c) 2026 ADBC Drivers Contributors
+#
+# This software is dual-licensed to you under the Universal Permissive License
+# (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl and Apache License
+# 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose
+# either license.
+#
+# If you elect to accept the software under the Apache License, Version 2.0,
+# the following applies:
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# -----------------------------------------------------------------------------
+
+repos:
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: 38bfb07c0c64c304f47eb52090f8288150c77730  # frozen: v0.17.1
+  hooks:
+  - id: ruff-check
+    name: "ruff check"
+    args: ["--extend-select", "I", "--fix"]
+  - id: ruff-format
+
+- repo: https://github.com/codespell-project/codespell
+  rev: 57b21406f092110c18776e39b0bda50d37c945c8  # frozen: v2.4.3
+  hooks:
+  - id: codespell
+    args: ["--ignore-words=.codespellignore"]
+    exclude: >
+        (?x)^(
+            .*Cargo\.toml$
+        )$
+
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
+  hooks:
+  - id: check-added-large-files
+    args: ["--enforce-all"]
+  - id: check-case-conflict
+  - id: check-executables-have-shebangs
+  - id: check-yaml
+  - id: detect-private-key
+  - id: end-of-file-fixer
+    exclude: '\.sln$'
+  - id: mixed-line-ending
+    args: [--fix=lf]
+    exclude: '\.(bat|sln)$'
+  - id: trailing-whitespace
+
+- repo: https://github.com/adbc-drivers/dev
+  rev: 0c94e3235eee46cc3ace6aa63daa203f3abcf53d  # frozen: v0.1.0
+  hooks:
+  - id: rat
+
+- repo: local
+  hooks:
+  - id: cargo fmt
+    name: cargo fmt
+    language: system
+    types: [rust]
+    entry: bash -c 'cargo +stable fmt --all'
+    pass_filenames: false

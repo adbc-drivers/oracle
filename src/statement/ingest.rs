@@ -33,11 +33,11 @@ use arrow_schema::{SchemaRef, extension::EXTENSION_TYPE_NAME_KEY};
 
 use crate::error_utils::{invalid_state_error, oracledb_error_to_adbc_error};
 use crate::sql::{SqlBuilder, qualified_table_name};
-use crate::statement::ADBCOracleStatement;
+use crate::statement::OracleStatement;
 
 /// One ingestion operation owns its bound data and borrows the statement executor.
 pub(super) struct Ingest<'a> {
-    statement: &'a ADBCOracleStatement,
+    statement: &'a OracleStatement,
     target_table: &'a str,
     target_db_schema: String,
     qualified_table_name: String,
@@ -195,7 +195,7 @@ impl<'a> Ingest<'a> {
 
     /// Takes pending batches and validates ingestion prerequisites,
     /// extensions, and names.
-    pub(super) fn new(statement: &'a mut ADBCOracleStatement) -> Result<Self> {
+    pub(super) fn new(statement: &'a mut OracleStatement) -> Result<Self> {
         if statement.sql_query.is_some() {
             return Err(invalid_state_error(
                 "cannot use sql_query together with ADBC ingest options",

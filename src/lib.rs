@@ -31,12 +31,12 @@ mod reader;
 mod sql;
 mod statement;
 
-pub use crate::connection::ADBCOracleConnection;
-pub use crate::database::ADBCOracleDatabase;
-pub use crate::driver::ADBCOracleDriver;
+pub use crate::connection::OracleConnection;
+pub use crate::database::OracleDatabase;
+pub use crate::driver::OracleDriver;
 pub use crate::statement::{
-    ADBCOracleStatement, STATEMENT_OPTION_BATCH_SIZE,
+    OracleStatement, STATEMENT_OPTION_BATCH_SIZE,
     STATEMENT_OPTION_FETCH_ARRAY_SIZE, STATEMENT_OPTION_PREFETCH_ROWS,
 };
 
-adbc_ffi::export_driver!(AdbcOracleInit, ADBCOracleDriver);
+adbc_ffi::export_driver!(AdbcDriverOracleInit, OracleDriver);

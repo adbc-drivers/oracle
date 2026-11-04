@@ -52,7 +52,7 @@ pub const STATEMENT_OPTION_FETCH_ARRAY_SIZE: &str =
 pub const STATEMENT_OPTION_PREFETCH_ROWS: &str =
     "oracle.statement.prefetch_rows";
 
-pub struct ADBCOracleStatement {
+pub struct OracleStatement {
     pub(crate) conn: Arc<oracledb::Connection>,
     pub(crate) autocommit: Arc<AtomicBool>,
     pub(crate) sql_query: Option<String>,
@@ -65,7 +65,7 @@ pub struct ADBCOracleStatement {
     pub(crate) cancelled: Arc<AtomicBool>,
 }
 
-impl Optionable for ADBCOracleStatement {
+impl Optionable for OracleStatement {
     type Option = OptionStatement;
 
     /// Rejects byte-valued statement option requests.
@@ -232,7 +232,7 @@ impl Optionable for ADBCOracleStatement {
     }
 }
 
-impl Statement for ADBCOracleStatement {
+impl Statement for OracleStatement {
     /// Replaces pending binds with one Arrow record batch.
     fn bind(&mut self, batch: arrow_array::RecordBatch) -> Result<()> {
         self.bind_batches = vec![batch];
@@ -355,7 +355,7 @@ impl Statement for ADBCOracleStatement {
     /// Reports that partitioned statement execution is unsupported.
     fn execute_partitions(&mut self) -> Result<PartitionedResult> {
         Err(Error::with_message_and_status(
-            format!("Not implemented"),
+            "Not implemented".to_string(),
             Status::NotImplemented,
         ))
     }
@@ -458,7 +458,7 @@ impl Statement for ADBCOracleStatement {
     /// Reports that parameter-schema discovery is unsupported.
     fn get_parameter_schema(&self) -> Result<arrow_schema::Schema> {
         Err(Error::with_message_and_status(
-            format!("Not implemented"),
+            "Not implemented".to_string(),
             Status::NotImplemented,
         ))
     }
@@ -485,13 +485,13 @@ impl Statement for ADBCOracleStatement {
     /// Reports that Substrait plans are unsupported.
     fn set_substrait_plan(&mut self, _plan: impl AsRef<[u8]>) -> Result<()> {
         Err(Error::with_message_and_status(
-            format!("Not implemented"),
+            "Not implemented".to_string(),
             Status::NotImplemented,
         ))
     }
 }
 
-impl ADBCOracleStatement {
+impl OracleStatement {
     /// Reads the connection's shared autocommit flag.
     fn autocommit_enabled(&self) -> bool {
         self.autocommit.load(Ordering::Relaxed)

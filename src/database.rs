@@ -22,7 +22,7 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-use super::connection::ADBCOracleConnection;
+use super::connection::OracleConnection;
 
 use std::sync::{Arc, atomic::AtomicBool};
 
@@ -34,15 +34,14 @@ use adbc_core::{
 
 use crate::oracle_options::OracleOptions;
 
-use oracledb;
 use url::{Host, Url};
 
-pub struct ADBCOracleDatabase {
+pub struct OracleDatabase {
     pub(crate) config: oracledb::Config,
     pub(crate) options: OracleOptions,
 }
 
-impl ADBCOracleDatabase {
+impl OracleDatabase {
     /// Applies an Oracle URI or native connect string to the connection
     /// configuration.
     fn set_uri(&mut self, connect_uri: &str) -> Result<()> {
@@ -109,7 +108,7 @@ impl ADBCOracleDatabase {
     }
 }
 
-impl Optionable for ADBCOracleDatabase {
+impl Optionable for OracleDatabase {
     type Option = OptionDatabase;
 
     /// Rejects byte-valued database option requests.
@@ -170,7 +169,7 @@ impl Optionable for ADBCOracleDatabase {
                     Ok(())
                 }
                 _ => Err(Error::with_message_and_status(
-                    format!("Username must be string"),
+                    "Username must be string".to_string(),
                     Status::InvalidArguments,
                 )),
             },
@@ -181,28 +180,28 @@ impl Optionable for ADBCOracleDatabase {
                     Ok(())
                 }
                 _ => Err(Error::with_message_and_status(
-                    format!("Password must be string"),
+                    "Password must be string".to_string(),
                     Status::InvalidArguments,
                 )),
             },
             OptionDatabase::Uri => match value {
                 OptionValue::String(connect_uri) => self.set_uri(&connect_uri),
                 _ => Err(Error::with_message_and_status(
-                    format!("URI must be string"),
+                    "URI must be string".to_string(),
                     Status::InvalidArguments,
                 )),
             },
             OptionDatabase::Other(key) => self.options.set_option(key, value),
             _ => Err(Error::with_message_and_status(
-                format!("Unsupported parameter"),
+                "Unsupported parameter".to_string(),
                 Status::InvalidArguments,
             )),
         }
     }
 }
 
-impl Database for ADBCOracleDatabase {
-    type ConnectionType = ADBCOracleConnection;
+impl Database for OracleDatabase {
+    type ConnectionType = OracleConnection;
 
     /// Opens an Oracle connection with inherited options and autocommit
     /// enabled.

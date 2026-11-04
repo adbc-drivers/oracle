@@ -34,7 +34,9 @@ use common::{collect_batches, collect_f64_values, new_connection};
 /// Verifies that an Oracle BINARY_DOUBLE result is fetched as Arrow `Float64`.
 #[test]
 fn test_1600() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query("select cast(1.5 as binary_double) as value from dual")
@@ -48,7 +50,9 @@ fn test_1600() {
 /// Verifies that bound Arrow `Float64` values round-trip through an Oracle BINARY_DOUBLE parameter.
 #[test]
 fn test_1601() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query(

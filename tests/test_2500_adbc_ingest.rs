@@ -46,7 +46,7 @@ fn unique_table_name(prefix: &str) -> String {
 }
 
 fn set_ingest_options(
-    statement: &mut adbc_oracle::ADBCOracleStatement,
+    statement: &mut adbc_oracle::OracleStatement,
     table_name: &str,
     mode: AdbcIngestMode,
 ) {
@@ -65,7 +65,7 @@ fn set_ingest_options(
 }
 
 fn select_i64_values(
-    connection: &mut adbc_oracle::ADBCOracleConnection,
+    connection: &mut adbc_oracle::OracleConnection,
     sql: &str,
 ) -> Vec<i64> {
     let mut statement = connection
@@ -83,7 +83,9 @@ fn select_i64_values(
 /// Verifies that Create ingest creates a table from an Arrow batch and inserts all bound rows.
 #[test]
 fn test_2500() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
 
     let table_name = unique_table_name("ADBC_INGEST_CREATE");
     let _ = execute_sql(&mut connection, &format!("drop table {table_name}"));
@@ -122,7 +124,9 @@ fn test_2500() {
 /// Verifies that Append ingest retains existing rows and adds every row from the Arrow batch.
 #[test]
 fn test_2501() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
 
     let table_name = unique_table_name("ADBC_INGEST_APPEND");
     let _ = execute_sql(&mut connection, &format!("drop table {table_name}"));
@@ -170,7 +174,9 @@ fn test_2501() {
 /// Verifies that Replace ingest recreates the target table and discards its prior schema and rows.
 #[test]
 fn test_2502() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
 
     let table_name = unique_table_name("ADBC_INGEST_REPLACE");
     let _ = execute_sql(&mut connection, &format!("drop table {table_name}"));
@@ -253,7 +259,9 @@ fn test_2502() {
 /// Verifies that CreateAppend creates a missing table, then appends to it on a subsequent ingest.
 #[test]
 fn test_2503() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
 
     let table_name = unique_table_name("ADBC_INGEST_CREATE_APPEND");
     let _ = execute_sql(&mut connection, &format!("drop table {table_name}"));

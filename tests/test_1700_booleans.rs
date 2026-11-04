@@ -34,7 +34,9 @@ use common::{collect_batches, collect_bool_values, new_connection};
 /// Verifies that an Oracle BOOLEAN result is fetched as an Arrow boolean value.
 #[test]
 fn test_1700() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query("select cast(true as boolean) as value from dual")
@@ -48,7 +50,9 @@ fn test_1700() {
 /// Verifies that bound Arrow boolean values round-trip through an Oracle BOOLEAN parameter.
 #[test]
 fn test_1701() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query("select cast(:value as boolean) as value from dual")

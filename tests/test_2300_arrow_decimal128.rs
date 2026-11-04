@@ -34,7 +34,9 @@ use common::{collect_batches, collect_decimal128_values, new_connection};
 /// Verifies that a scaled Oracle NUMBER result is fetched as its unscaled Arrow Decimal128 value.
 #[test]
 fn test_2300() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query(
@@ -51,7 +53,9 @@ fn test_2300() {
 /// Verifies that bound Arrow Decimal128 values preserve their scaled representation through Oracle.
 #[test]
 fn test_2301() {
-    let mut connection = new_connection();
+    let Some(mut connection) = new_connection() else {
+        return;
+    };
     let mut statement = connection.new_statement().expect("create statement");
     statement
         .set_sql_query(

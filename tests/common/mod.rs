@@ -30,7 +30,7 @@ use adbc_core::{
     Connection, Database, Driver, Optionable, Statement,
     options::{OptionDatabase, OptionValue},
 };
-use adbc_oracle::{ADBCOracleConnection, ADBCOracleDriver};
+use adbc_oracle::{OracleConnection, OracleDriver};
 use arrow_array::Decimal128Array;
 use arrow_array::{
     BinaryArray, BooleanArray, Float32Array, Float64Array, Int32Array,
@@ -39,7 +39,23 @@ use arrow_array::{
 use arrow_schema::ArrowError;
 use chrono::{NaiveDate, NaiveDateTime};
 
-pub fn new_connection() -> ADBCOracleConnection {
+pub fn new_connection() -> Option<OracleConnection> {
+    let missing: Vec<_> = [
+        "ADBC_ORACLE_TEST_USERNAME",
+        "ADBC_ORACLE_TEST_PASSWORD",
+        "ADBC_ORACLE_TEST_URI",
+    ]
+    .into_iter()
+    .filter(|name| env::var_os(name).is_none())
+    .collect();
+    if !missing.is_empty() {
+        eprintln!(
+            "Skipping Oracle integration test: unset {}",
+            missing.join(", ")
+        );
+        return None;
+    }
+
     let username = env::var("ADBC_ORACLE_TEST_USERNAME").expect(
         "set ADBC_ORACLE_TEST_USERNAME to run Oracle integration tests",
     );
@@ -49,7 +65,7 @@ pub fn new_connection() -> ADBCOracleConnection {
     let uri = env::var("ADBC_ORACLE_TEST_URI")
         .expect("set ADBC_ORACLE_TEST_URI to run Oracle integration tests");
 
-    let mut driver = ADBCOracleDriver::default();
+    let mut driver = OracleDriver::default();
     let mut database = driver.new_database().expect("create database handle");
     database
         .set_option(OptionDatabase::Username, OptionValue::String(username))
@@ -61,11 +77,11 @@ pub fn new_connection() -> ADBCOracleConnection {
         .set_option(OptionDatabase::Uri, OptionValue::String(uri))
         .expect("set connect string");
 
-    database.new_connection().expect("connect to Oracle")
+    Some(database.new_connection().expect("connect to Oracle"))
 }
 
 pub fn execute_sql(
-    connection: &mut ADBCOracleConnection,
+    connection: &mut OracleConnection,
     sql: &str,
 ) -> adbc_core::error::Result<()> {
     let mut statement = connection.new_statement().expect("create statement");
