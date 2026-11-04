@@ -57,7 +57,14 @@ def driver_path(driver: adbc_drivers_validation.model.DriverQuirks) -> str:
         "darwin": "dylib",
     }.get(sys.platform, "so")
     library = "adbc_oracle.dll" if sys.platform == "win32" else f"libadbc_oracle.{ext}"
-    return str(Path(__file__).parent.parent.parent / "target" / "release" / library)
+    target = Path(__file__).parent.parent.parent / "target"
+    candidates = [target / profile / library for profile in ("release", "debug")]
+    existing = [path for path in candidates if path.is_file()]
+    if existing:
+        # CI validation builds use the debug profile; local builds may use release.
+        # If both exist, use the one produced most recently.
+        return str(max(existing, key=lambda path: path.stat().st_mtime_ns))
+    return str(candidates[0])
 
 
 def pytest_collection_modifyitems(
