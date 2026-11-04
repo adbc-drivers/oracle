@@ -26,7 +26,7 @@ use std::sync::Arc;
 
 use adbc_core::options::OptionDatabase;
 use adbc_core::{Connection, Database, Driver, Optionable, Statement};
-use adbc_oracle::ADBCOracleDriver;
+use adbc_oracle::OracleDriver;
 use arrow_array::{Float64Array, Int32Array, RecordBatch};
 use arrow_schema::{DataType, Field, Schema};
 
@@ -38,7 +38,7 @@ fn main() -> adbc_core::error::Result<()> {
     let uri = std::env::var("ADBC_ORACLE_URI")
         .expect("ADBC_ORACLE_URI environment variable is required");
 
-    let mut driver = ADBCOracleDriver::default();
+    let mut driver = OracleDriver::default();
     let mut database = driver.new_database()?;
     database.set_option(OptionDatabase::Username, username.into())?;
     database.set_option(OptionDatabase::Password, password.into())?;

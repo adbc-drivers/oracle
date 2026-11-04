@@ -52,7 +52,7 @@ pub const STATEMENT_OPTION_FETCH_ARRAY_SIZE: &str =
 pub const STATEMENT_OPTION_PREFETCH_ROWS: &str =
     "oracle.statement.prefetch_rows";
 
-pub struct ADBCOracleStatement {
+pub struct OracleStatement {
     pub(crate) conn: Arc<oracledb::Connection>,
     pub(crate) autocommit: Arc<AtomicBool>,
     pub(crate) sql_query: Option<String>,
@@ -65,7 +65,7 @@ pub struct ADBCOracleStatement {
     pub(crate) cancelled: Arc<AtomicBool>,
 }
 
-impl Optionable for ADBCOracleStatement {
+impl Optionable for OracleStatement {
     type Option = OptionStatement;
 
     /// Rejects byte-valued statement option requests.
@@ -232,7 +232,7 @@ impl Optionable for ADBCOracleStatement {
     }
 }
 
-impl Statement for ADBCOracleStatement {
+impl Statement for OracleStatement {
     /// Replaces pending binds with one Arrow record batch.
     fn bind(&mut self, batch: arrow_array::RecordBatch) -> Result<()> {
         self.bind_batches = vec![batch];
@@ -466,7 +466,7 @@ impl Statement for ADBCOracleStatement {
     }
 }
 
-impl ADBCOracleStatement {
+impl OracleStatement {
     /// Reads the connection's shared autocommit flag.
     fn autocommit_enabled(&self) -> bool {
         self.autocommit.load(Ordering::Relaxed)

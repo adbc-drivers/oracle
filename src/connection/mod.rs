@@ -27,7 +27,7 @@ use metadata::Metadata;
 
 use crate::sql::SqlBuilder;
 
-use crate::statement::ADBCOracleStatement;
+use crate::statement::OracleStatement;
 
 use std::collections::HashSet;
 use std::sync::{
@@ -51,7 +51,7 @@ const AUTOCOMMIT_FALSE: &str = "false";
 const AUTOCOMMIT_ENABLED: &str = "enabled";
 const AUTOCOMMIT_DISABLED: &str = "disabled";
 
-pub struct ADBCOracleConnection {
+pub struct OracleConnection {
     pub conn: Arc<oracledb::Connection>,
     pub(crate) autocommit: Arc<AtomicBool>,
     pub(crate) options: OracleOptions,
@@ -96,7 +96,7 @@ fn parse_autocommit_value(value: OptionValue) -> Result<bool> {
     }
 }
 
-impl Optionable for ADBCOracleConnection {
+impl Optionable for OracleConnection {
     type Option = OptionConnection;
 
     /// Rejects byte-valued connection option requests.
@@ -203,8 +203,8 @@ impl Optionable for ADBCOracleConnection {
     }
 }
 
-impl Connection for ADBCOracleConnection {
-    type StatementType = ADBCOracleStatement;
+impl Connection for OracleConnection {
+    type StatementType = OracleStatement;
 
     /// Returns success without cancelling any connection operations.
     fn cancel(&mut self) -> Result<()> {

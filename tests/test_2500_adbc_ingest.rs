@@ -46,7 +46,7 @@ fn unique_table_name(prefix: &str) -> String {
 }
 
 fn set_ingest_options(
-    statement: &mut adbc_oracle::ADBCOracleStatement,
+    statement: &mut adbc_oracle::OracleStatement,
     table_name: &str,
     mode: AdbcIngestMode,
 ) {
@@ -65,7 +65,7 @@ fn set_ingest_options(
 }
 
 fn select_i64_values(
-    connection: &mut adbc_oracle::ADBCOracleConnection,
+    connection: &mut adbc_oracle::OracleConnection,
     sql: &str,
 ) -> Vec<i64> {
     let mut statement = connection
