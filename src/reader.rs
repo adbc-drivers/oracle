@@ -22,8 +22,7 @@
 // limitations under the License.
 // -----------------------------------------------------------------------------
 
-//! Temporary adaptation of buffered Arrow batches to ADBC's reader interface.
-// TODO: Replace this adapter when rust-oracledb provides a native RecordBatchReader.
+//! Adapters between Oracle Arrow streams and ADBC readers.
 
 use std::collections::VecDeque;
 use std::sync::{
@@ -37,26 +36,9 @@ use arrow_schema::{ArrowError, SchemaRef};
 pub(crate) struct BatchReader {
     schema: SchemaRef,
     batches: VecDeque<RecordBatch>,
-    batch_size: usize,
-    offset: usize,
-    cancelled: Option<Arc<AtomicBool>>,
 }
 
 impl BatchReader {
-    /// Creates a cancellable query reader that skips empty batches and limits
-    /// batch rows.
-    pub(crate) fn for_query(
-        batches: Vec<RecordBatch>,
-        batch_size: usize,
-        cancelled: Arc<AtomicBool>,
-    ) -> Self {
-        let mut reader = Self::new(batches);
-        reader.batches.retain(|batch| batch.num_rows() > 0);
-        reader.batch_size = batch_size.max(1);
-        reader.cancelled = Some(cancelled);
-        reader
-    }
-
     /// Creates a reader from at least one batch, retaining zero-row batches.
     pub(crate) fn new(batches: Vec<RecordBatch>) -> Self {
         let schema = batches
@@ -66,9 +48,6 @@ impl BatchReader {
         Self {
             schema,
             batches: batches.into(),
-            batch_size: usize::MAX,
-            offset: 0,
-            cancelled: None,
         }
     }
 }
@@ -76,26 +55,44 @@ impl BatchReader {
 impl Iterator for BatchReader {
     type Item = std::result::Result<RecordBatch, ArrowError>;
 
-    /// Returns the next batch slice, or ends the stream on cancellation or
-    /// exhaustion.
+    /// Returns the next batch or ends the stream when exhausted.
     fn next(&mut self) -> Option<Self::Item> {
-        if self
-            .cancelled
-            .as_ref()
-            .is_some_and(|cancelled| cancelled.load(Ordering::Relaxed))
-        {
-            self.batches.clear();
+        self.batches.pop_front().map(Ok)
+    }
+}
+
+/// Preserves ADBC cancellation while returning native Arrow batches lazily.
+pub(crate) struct CancellableQueryReader {
+    batches: oracledb::ArrowBatchReader<'static>,
+    cancelled: Arc<AtomicBool>,
+}
+
+impl CancellableQueryReader {
+    /// Wraps a native stream with the statement's cancellation flag.
+    pub(crate) fn new(
+        batches: oracledb::ArrowBatchReader<'static>,
+        cancelled: Arc<AtomicBool>,
+    ) -> Self {
+        Self { batches, cancelled }
+    }
+}
+
+impl Iterator for CancellableQueryReader {
+    type Item = std::result::Result<RecordBatch, ArrowError>;
+
+    /// Returns the next native batch unless the statement was cancelled.
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.cancelled.load(Ordering::Relaxed) {
             return None;
         }
-        let batch = self.batches.front()?;
-        let row_count = (batch.num_rows() - self.offset).min(self.batch_size);
-        let result = batch.slice(self.offset, row_count);
-        self.offset += row_count;
-        if self.offset == batch.num_rows() {
-            self.batches.pop_front();
-            self.offset = 0;
-        }
-        Some(Ok(result))
+        self.batches.next()
+    }
+}
+
+impl RecordBatchReader for CancellableQueryReader {
+    /// Returns the schema captured from the native query stream.
+    fn schema(&self) -> SchemaRef {
+        self.batches.schema()
     }
 }
 

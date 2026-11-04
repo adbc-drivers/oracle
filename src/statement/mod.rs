@@ -42,7 +42,7 @@ use crate::error_utils::{
     option_not_found, oracledb_error_to_adbc_error,
 };
 use crate::oracle_options::OracleOptions;
-use crate::reader::BatchReader;
+use crate::reader::CancellableQueryReader;
 use crate::sql::{SqlBuilder, validate_identifier};
 use crate::statement::ingest::{Ingest, IngestMode};
 
@@ -285,13 +285,12 @@ impl Statement for ADBCOracleStatement {
                     Arc::new(Schema::empty()),
                 )));
             }
-            let batch = self.query_arrow(
+            let batches = self.query_arrow_batches(
                 &sql_query,
                 oracledb::BindParameters::default(),
             )?;
-            return Ok(Box::new(BatchReader::for_query(
-                vec![batch],
-                self.oracle_options.read_batch_rows,
+            return Ok(Box::new(CancellableQueryReader::new(
+                batches,
                 self.cancelled.clone(),
             )));
         }
@@ -318,20 +317,37 @@ impl Statement for ADBCOracleStatement {
                 Arc::new(Schema::empty()),
             )));
         }
-        let mut result_batches = Vec::with_capacity(bind_batches.len());
-        for batch in bind_batches {
-            if batch.num_rows() == 0 {
-                continue;
+        let query_bind_batches: Vec<RecordBatch> = bind_batches
+            .into_iter()
+            .filter(|batch| batch.num_rows() > 0)
+            .collect();
+        let bind_batch = match query_bind_batches.as_slice() {
+            [batch] => batch.clone(),
+            [first, ..] => {
+                let schema = first.schema();
+                if query_bind_batches
+                    .iter()
+                    .any(|batch| batch.schema().as_ref() != schema.as_ref())
+                {
+                    return Err(invalid_bind_error(
+                        "bind parameter batches must have identical schemas",
+                    ));
+                }
+                arrow::compute::concat_batches(&schema, &query_bind_batches)
+                    .map_err(arrow_error_to_adbc_error)?
             }
-            let result = self.query_arrow(
-                &sql_query,
-                oracledb::BindParameters::Arrow(batch),
-            )?;
-            result_batches.push(result);
-        }
-        Ok(Box::new(BatchReader::for_query(
-            result_batches,
-            self.oracle_options.read_batch_rows,
+            [] => {
+                return Err(invalid_bind_error(
+                    "bind parameters RecordBatch must contain at least one row",
+                ));
+            }
+        };
+        let batches = self.query_arrow_batches(
+            &sql_query,
+            oracledb::BindParameters::Arrow(bind_batch),
+        )?;
+        Ok(Box::new(CancellableQueryReader::new(
+            batches,
             self.cancelled.clone(),
         )))
     }
@@ -360,15 +376,19 @@ impl Statement for ADBCOracleStatement {
         }
         let query = SqlBuilder::query_schema(sql).build();
         let statement = self.create_oracle_statement(&query, None)?;
-        let batch = if self.bind_batches.is_empty() {
-
+        let schema = if self.bind_batches.is_empty() {
             // Schema inspection must also work before parameter values are bound.
             // Bind NULLs to describe parameterized queries without loading rows.
             let nulls = vec![None::<String>; original.bind_names().len()];
-            let values: Vec<&dyn oracledb::ToDbValue> = nulls.iter()
-                .map(|value| value as &dyn oracledb::ToDbValue).collect();
+            let values: Vec<&dyn oracledb::ToDbValue> = nulls
+                .iter()
+                .map(|value| value as &dyn oracledb::ToDbValue)
+                .collect();
             let rows = [values.as_slice()];
-            statement.query_arrow(oracledb::BindParameters::Slice(&rows))
+            statement
+                .query_arrow_batches(oracledb::BindParameters::Slice(&rows))
+                .map_err(oracledb_error_to_adbc_error)?
+                .schema()
         } else {
             let batch = self.bind_batches.iter().find(|batch| batch.num_rows() > 0)
                 .ok_or_else(|| invalid_bind_error(
@@ -376,9 +396,14 @@ impl Statement for ADBCOracleStatement {
                 ))?;
 
             // One parameter row is sufficient; leave all bound batches available.
-            statement.query_arrow(oracledb::BindParameters::Arrow(batch.slice(0, 1)))
-        }.map_err(oracledb_error_to_adbc_error)?;
-        Ok(batch.schema().as_ref().clone())
+            statement
+                .query_arrow_batches(oracledb::BindParameters::Arrow(
+                    batch.slice(0, 1),
+                ))
+                .map_err(oracledb_error_to_adbc_error)?
+                .schema()
+        };
+        Ok(schema.as_ref().clone())
     }
 
     /// Executes SQL or ingestion, applies autocommit, and returns affected
@@ -492,7 +517,8 @@ impl ADBCOracleStatement {
             .statement(sql)
             .map_err(oracledb_error_to_adbc_error)?
             .fetch_array_size(self.oracle_options.fetch_array_size)
-            .prefetch_rows(self.oracle_options.prefetch_rows);
+            .prefetch_rows(self.oracle_options.prefetch_rows)
+            .arrow_batch_size(self.oracle_options.read_batch_rows.max(1));
         if let Some(schema) = requested_schema {
             builder = builder.with_requested_schema(schema);
         }
@@ -554,20 +580,20 @@ impl ADBCOracleStatement {
         })
     }
 
-    /// Uses native Arrow mapping, discovering a schema only for explicit
+    /// Uses the native Arrow stream, discovering a schema only for explicit
     /// numeric overrides.
-    fn query_arrow(
+    fn query_arrow_batches<'params>(
         &self,
         sql: &str,
-        params: oracledb::BindParameters<'_>,
-    ) -> Result<RecordBatch> {
+        params: oracledb::BindParameters<'params>,
+    ) -> Result<oracledb::ArrowBatchReader<'params>> {
         let statement = self.create_oracle_statement(sql, None)?;
         if (self.oracle_options.use_high_precision
             && self.oracle_options.unbounded_number_type == "float64")
             || !statement.is_query()
         {
             return statement
-                .query_arrow(params)
+                .query_arrow_batches(params)
                 .map_err(oracledb_error_to_adbc_error);
         }
 
@@ -584,7 +610,7 @@ impl ADBCOracleStatement {
         };
         let native_schema = self
             .create_oracle_statement(&schema_sql, None)?
-            .query_arrow(schema_params)
+            .query_arrow_batches(schema_params)
             .map_err(oracledb_error_to_adbc_error)?
             .schema();
         let fields = native_schema.fields().iter().map(|field| {
@@ -615,11 +641,11 @@ impl ADBCOracleStatement {
         );
         if &schema == native_schema.as_ref() {
             return statement
-                .query_arrow(params)
+                .query_arrow_batches(params)
                 .map_err(oracledb_error_to_adbc_error);
         }
         self.create_oracle_statement(sql, Some(Arc::new(schema)))?
-            .query_arrow(params)
+            .query_arrow_batches(params)
             .map_err(oracledb_error_to_adbc_error)
     }
 }
