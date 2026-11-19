@@ -249,13 +249,15 @@ def test_out_of_range_timestamp(driver, conn, unit: str, sign: int) -> None:
     ts = pyarrow.array([v], type=pyarrow.timestamp(unit))
     batch = pyarrow.record_batch({"ts": ts})
 
-    with conn.cursor() as cursor:
-        with pytest.raises(
+    with (
+        conn.cursor() as cursor,
+        pytest.raises(
             (conn.DataError, pyarrow.ArrowInvalid),
             match="timestamp is outside (Arrow|Oracle) range",
-        ):
-            cursor.execute("SELECT :0 AS ts FROM DUAL", batch)
-            cursor.fetch_arrow_table()
+        ),
+    ):
+        cursor.execute("SELECT :0 AS ts FROM DUAL", batch)
+        cursor.fetch_arrow_table()
 
 
 def test_implicit_result_set(driver, conn) -> None:
