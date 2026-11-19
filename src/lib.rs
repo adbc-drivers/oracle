@@ -27,7 +27,6 @@ mod database;
 mod driver;
 mod error_utils;
 mod oracle_options;
-mod reader;
 mod sql;
 mod statement;
 

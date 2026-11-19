@@ -77,7 +77,7 @@ impl Default for OracleOptions {
             prefetch_rows: 2,
             fetch_array_size: 1000,
 
-            // The legacy reader's default batch size is 65536 rows.
+            // Default row count passed to the native Arrow batch reader.
             read_batch_rows: 65_536,
             insert_batch_rows: 1_000,
             string_type: "nvarchar2".to_string(),

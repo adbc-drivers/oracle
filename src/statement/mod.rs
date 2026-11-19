@@ -34,6 +34,7 @@ use adbc_core::{
     error::{Error, Result, Status},
     options::{OptionStatement, OptionValue},
 };
+use arrow::compute::concat_batches;
 use arrow_array::{RecordBatch, RecordBatchIterator};
 use arrow_schema::{DataType, Schema, SchemaRef};
 
@@ -42,7 +43,6 @@ use crate::error_utils::{
     option_not_found, oracledb_error_to_adbc_error,
 };
 use crate::oracle_options::OracleOptions;
-use crate::reader::BatchReader;
 use crate::sql::{SqlBuilder, validate_identifier};
 use crate::statement::ingest::{Ingest, IngestMode};
 
@@ -62,7 +62,6 @@ pub struct OracleStatement {
     pub(crate) target_table: Option<String>,
     pub(crate) target_db_schema: Option<String>,
     pub(crate) temporary: bool,
-    pub(crate) cancelled: Arc<AtomicBool>,
 }
 
 impl Optionable for OracleStatement {
@@ -253,10 +252,12 @@ impl Statement for OracleStatement {
         Ok(())
     }
 
-    /// Stops delivery of buffered batches through this statement's readers.
+    /// Native Arrow readers do not currently expose cancellation.
     fn cancel(&mut self) -> Result<()> {
-        self.cancelled.store(true, Ordering::Relaxed);
-        Ok(())
+        Err(Error::with_message_and_status(
+            "native Arrow query cancellation is not supported",
+            Status::NotImplemented,
+        ))
     }
 
     /// Executes SQL with pending binds and returns an Arrow reader for its
@@ -264,7 +265,6 @@ impl Statement for OracleStatement {
     fn execute(
         &mut self,
     ) -> Result<Box<dyn arrow_array::RecordBatchReader + Send + 'static>> {
-        self.cancelled.store(false, Ordering::Relaxed);
         let sql_query = self.sql_query.clone().ok_or_else(|| {
             Error::with_message_and_status(
                 "sql_query is None".to_string(),
@@ -285,17 +285,13 @@ impl Statement for OracleStatement {
                     Arc::new(Schema::empty()),
                 )));
             }
-            let batch = self.query_arrow(
+            let reader = self.query_arrow_batches(
                 &sql_query,
                 oracledb::BindParameters::default(),
             )?;
-            return Ok(Box::new(BatchReader::for_query(
-                vec![batch],
-                self.oracle_options.read_batch_rows,
-                self.cancelled.clone(),
-            )));
+            return Ok(Box::new(reader));
         }
-        let bind_batches = std::mem::take(&mut self.bind_batches);
+        let mut bind_batches = std::mem::take(&mut self.bind_batches);
         let total_rows: usize =
             bind_batches.iter().map(RecordBatch::num_rows).sum();
         if total_rows == 0 {
@@ -318,22 +314,17 @@ impl Statement for OracleStatement {
                 Arc::new(Schema::empty()),
             )));
         }
-        let mut result_batches = Vec::with_capacity(bind_batches.len());
-        for batch in bind_batches {
-            if batch.num_rows() == 0 {
-                continue;
-            }
-            let result = self.query_arrow(
-                &sql_query,
-                oracledb::BindParameters::Arrow(batch),
-            )?;
-            result_batches.push(result);
-        }
-        Ok(Box::new(BatchReader::for_query(
-            result_batches,
-            self.oracle_options.read_batch_rows,
-            self.cancelled.clone(),
-        )))
+        let batch = if bind_batches.len() == 1 {
+            bind_batches.pop().unwrap()
+        } else {
+            concat_batches(&bind_batches[0].schema(), &bind_batches)
+                .map_err(arrow_error_to_adbc_error)?
+        };
+        let reader = self.query_arrow_batches(
+            &sql_query,
+            oracledb::BindParameters::Arrow(batch),
+        )?;
+        Ok(Box::new(reader))
     }
 
     /// Reports that partitioned statement execution is unsupported.
@@ -492,7 +483,8 @@ impl OracleStatement {
             .statement(sql)
             .map_err(oracledb_error_to_adbc_error)?
             .fetch_array_size(self.oracle_options.fetch_array_size)
-            .prefetch_rows(self.oracle_options.prefetch_rows);
+            .prefetch_rows(self.oracle_options.prefetch_rows)
+            .arrow_batch_size(self.oracle_options.read_batch_rows);
         if let Some(schema) = requested_schema {
             builder = builder.with_requested_schema(schema);
         }
@@ -556,18 +548,18 @@ impl OracleStatement {
 
     /// Uses native Arrow mapping, discovering a schema only for explicit
     /// numeric overrides.
-    fn query_arrow(
+    fn query_arrow_batches<'params>(
         &self,
         sql: &str,
-        params: oracledb::BindParameters<'_>,
-    ) -> Result<RecordBatch> {
+        params: oracledb::BindParameters<'params>,
+    ) -> Result<oracledb::ArrowBatchReader<'params>> {
         let statement = self.create_oracle_statement(sql, None)?;
         if (self.oracle_options.use_high_precision
             && self.oracle_options.unbounded_number_type == "float64")
             || !statement.is_query()
         {
             return statement
-                .query_arrow(params)
+                .query_arrow_batches(params)
                 .map_err(oracledb_error_to_adbc_error);
         }
 
@@ -615,11 +607,11 @@ impl OracleStatement {
         );
         if &schema == native_schema.as_ref() {
             return statement
-                .query_arrow(params)
+                .query_arrow_batches(params)
                 .map_err(oracledb_error_to_adbc_error);
         }
         self.create_oracle_statement(sql, Some(Arc::new(schema)))?
-            .query_arrow(params)
+            .query_arrow_batches(params)
             .map_err(oracledb_error_to_adbc_error)
     }
 }

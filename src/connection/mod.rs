@@ -309,7 +309,6 @@ impl Connection for OracleConnection {
             target_table: None,
             target_db_schema: None,
             temporary: false,
-            cancelled: Arc::new(AtomicBool::new(false)),
         })
     }
 
