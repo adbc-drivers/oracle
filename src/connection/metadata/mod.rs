@@ -36,13 +36,11 @@ use adbc_core::{
 use arrow::buffer::ScalarBuffer;
 use arrow::json::ReaderBuilder as JsonReaderBuilder;
 use arrow_array::{
-    ArrayRef, BooleanArray, Int64Array, RecordBatch, StringArray, UInt32Array,
-    UnionArray, new_empty_array,
+    ArrayRef, BooleanArray, Int64Array, RecordBatch, RecordBatchIterator,
+    StringArray, UInt32Array, UnionArray, new_empty_array,
 };
 use arrow_schema::{DataType, Schema, UnionMode};
 use serde_json::{Value, json};
-
-use crate::reader::BatchReader;
 
 use crate::error_utils::{
     arrow_error_to_adbc_error, oracledb_error_to_adbc_error,
@@ -450,11 +448,12 @@ impl<'a> Metadata<'a> {
                         .get::<String>(0)
                         .map_err(oracledb_error_to_adbc_error)?,
                     None => {
-                        return Ok(Box::new(BatchReader::new(vec![
-                            RecordBatch::new_empty(
+                        return Ok(Box::new(RecordBatchIterator::new(
+                            [Ok(RecordBatch::new_empty(
                                 schemas::GET_OBJECTS_SCHEMA.clone(),
-                            ),
-                        ])));
+                            ))],
+                            schemas::GET_OBJECTS_SCHEMA.clone(),
+                        )));
                     }
                 }
             } else {
@@ -607,7 +606,8 @@ impl<'a> Metadata<'a> {
                 RecordBatch::new_empty(schemas::GET_OBJECTS_SCHEMA.clone())
             }
         };
-        Ok(Box::new(BatchReader::new(vec![batch])))
+        let schema = batch.schema();
+        Ok(Box::new(RecordBatchIterator::new([Ok(batch)], schema)))
     }
 
     /// Returns the native Arrow schema from a zero-row table query.
@@ -654,7 +654,8 @@ impl<'a> Metadata<'a> {
             vec![Arc::new(StringArray::from(vec!["TABLE", "VIEW"]))],
         )
         .map_err(arrow_error_to_adbc_error)?;
-        Ok(Box::new(BatchReader::new(vec![batch])))
+        let schema = batch.schema();
+        Ok(Box::new(RecordBatchIterator::new([Ok(batch)], schema)))
     }
 
     /// Creates a metadata reader borrowing the Oracle connection.
@@ -754,7 +755,8 @@ fn make_info_reader(
         ],
     )
     .map_err(arrow_error_to_adbc_error)?;
-    Ok(Box::new(BatchReader::new(vec![batch])))
+    let schema = batch.schema();
+    Ok(Box::new(RecordBatchIterator::new([Ok(batch)], schema)))
 }
 
 /// Maps an Oracle constraint code to an ADBC type, rejecting unknown codes.

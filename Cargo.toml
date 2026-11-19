@@ -29,13 +29,13 @@ edition = "2024"
 license = "UPL-1.0 OR Apache-2.0"
 
 [dependencies]
-adbc_core = "0.24.0"
-adbc_ffi = "0.24.0"
-arrow = "59.3.2"
-arrow-array = "59.3.2"
-arrow-schema = "59.3.2"
+adbc_core = "0.25.0"
+adbc_ffi = "0.25.0"
+arrow = "60.1.0"
+arrow-array = "60.1.0"
+arrow-schema = "60.1.0"
 chrono = "0.4.45"
-oracledb = { version = "26.0.0-beta.5", features = ["arrow"] }
+oracledb = { version = "26.0.0-beta.6", features = ["arrow"] }
 serde_json = "1.0.154"
 url = "2.5.8"
 
