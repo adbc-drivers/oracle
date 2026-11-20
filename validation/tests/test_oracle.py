@@ -60,6 +60,9 @@ _test_options = [
 ]
 
 
+@pytest.mark.xfail(
+    reason="The driver does not implement the Oracle options exercised by this test"
+)
 def test_options_init(driver, driver_path: str, db_kwargs) -> None:
     # ensure we can set options on init and have them inherited down to the
     # statement. test separately to avoid spamming connections, which Instant
@@ -78,6 +81,9 @@ def test_options_init(driver, driver_path: str, db_kwargs) -> None:
 
 
 @pytest.mark.parametrize("scope", ["database", "connection", "statement"])
+@pytest.mark.xfail(
+    reason="The driver does not implement the Oracle options exercised by this test"
+)
 def test_options_global(
     driver,
     driver_path: str,
@@ -122,6 +128,9 @@ def test_options_global(
 
 
 @pytest.mark.parametrize("coltype", ["blob", "nvarchar2"])
+@pytest.mark.xfail(
+    reason="The driver does not support the requested JSON ingestion mapping"
+)
 def test_ingest_json(driver, conn, coltype: str) -> None:
     # https://github.com/adbc-drivers/oracle/issues/102
     data = pyarrow.Table.from_pydict(

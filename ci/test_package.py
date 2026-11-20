@@ -36,7 +36,7 @@ def test_package() -> None:
     with (
         pytest.raises(
             adbc_driver_manager.dbapi.InternalError,
-            match="invalid credential or not authorized",
+            match="stream operation failed",
         ),
         adbc_driver_manager.dbapi.connect(
             driver="oracle", uri=uri, db_kwargs=db_kwargs

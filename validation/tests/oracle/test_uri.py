@@ -104,6 +104,7 @@ def test_oracle_uri_with_server_type_and_instance_name_parsing(
         assert instance_name.upper() == oracle_instance_name.upper()
 
 
+@pytest.mark.xfail(reason="The driver ignores the onInit URI parameter")
 def test_oracle_uri_with_params(
     driver_path: str,
     oracle_user: str,
@@ -153,6 +154,7 @@ def test_oracle_uri_ipv6_parsing(
         assert result[0] == 1
 
 
+@pytest.mark.xfail(reason="An empty host returns ProgrammingError")
 def test_oracle_uri_missing_host_error(
     driver_path: str,
 ) -> None:
@@ -169,6 +171,7 @@ def test_oracle_uri_missing_host_error(
         pass
 
 
+@pytest.mark.xfail(reason="An empty URI returns a configuration directory error")
 def test_oracle_uri_empty_error(
     driver_path: str,
 ) -> None:

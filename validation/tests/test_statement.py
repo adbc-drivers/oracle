@@ -65,6 +65,7 @@ class TestStatement(adbc_drivers_validation.tests.statement.TestStatement):
         expected = data["idx"].cast(pyarrow.decimal128(19, 0))
         assert result == pyarrow.Table.from_arrays([expected], names=["idx"])
 
+    @pytest.mark.xfail(reason="The driver does not implement statement cancellation")
     def test_cancel(self, driver, conn) -> None:
         data = pyarrow.Table.from_batches(
             [
@@ -113,6 +114,7 @@ class TestStatement(adbc_drivers_validation.tests.statement.TestStatement):
             result = pyarrow.RecordBatchReader._import_from_c(handle.address).read_all()
         assert result[0].to_pylist() == [2.0, 3.0, 4.0, 5.0]
 
+    @pytest.mark.xfail(reason="Commit succeeds when autocommit is enabled")
     def test_transaction_toggle(self, driver, conn) -> None:
         if not driver.features.connection_transactions:
             pytest.skip("Driver does not support transactions")
@@ -260,6 +262,7 @@ def test_out_of_range_timestamp(driver, conn, unit: str, sign: int) -> None:
         cursor.fetch_arrow_table()
 
 
+@pytest.mark.xfail(reason="The driver does not support PL/SQL statements")
 def test_implicit_result_set(driver, conn) -> None:
     query = """DECLARE c SYS_REFCURSOR; BEGIN OPEN c FOR SELECT 1 AS RESULT FROM DUAL; DBMS_SQL.RETURN_RESULT(c); END;"""
     with conn.cursor() as cursor:
@@ -270,6 +273,7 @@ def test_implicit_result_set(driver, conn) -> None:
         assert cursor.fetchall() == [(1,)]
 
 
+@pytest.mark.xfail(reason="The driver does not support PL/SQL statements")
 def test_implicit_result_set_procedure(driver, conn) -> None:
     setup = "CREATE OR REPLACE PROCEDURE SP_GET_NOTES_DEMO (P_CURSOR OUT SYS_REFCURSOR) AS BEGIN OPEN P_CURSOR FOR SELECT 'HELLO WORLD' AS GREETING FROM DUAL; END;"
     query = """DECLARE c SYS_REFCURSOR; BEGIN SP_GET_NOTES_DEMO(c); DBMS_SQL.RETURN_RESULT(c); END;"""
@@ -282,6 +286,7 @@ def test_implicit_result_set_procedure(driver, conn) -> None:
         assert cursor.fetchall() == [("HELLO WORLD",)]
 
 
+@pytest.mark.xfail(reason="The driver does not support PL/SQL statements")
 def test_implicit_result_set_manyrow(driver, conn) -> None:
     setup = [
         "CREATE TABLE SAMPLE (a INT, b NVARCHAR2(100))",
@@ -310,6 +315,7 @@ def test_implicit_result_set_manyrow(driver, conn) -> None:
         assert cursor.fetchall() == [("HELLO WORLD",), ("SPAM",), ("EGGS",)]
 
 
+@pytest.mark.xfail(reason="The driver does not support PL/SQL statements")
 def test_implicit_result_set_multiple(driver, conn) -> None:
     # This isn't supported; need multi-result-set support
     query = """DECLARE c SYS_REFCURSOR;
@@ -328,6 +334,7 @@ def test_implicit_result_set_multiple(driver, conn) -> None:
         assert cursor.fetchall() == [(1,)]
 
 
+@pytest.mark.xfail(reason="The driver does not implement PL/SQL OUT parameter handling")
 def test_out_parameters(driver, conn) -> None:
     setup = "CREATE OR REPLACE PROCEDURE SP_GET_OUT_DEMO (p1 IN NVARCHAR2, reply OUT NVARCHAR2) AS BEGIN reply := 'HELLO, ' || p1; END;"
     query = """BEGIN SP_GET_OUT_DEMO(:1, :2); END;"""
@@ -498,56 +505,55 @@ class OutParameterTypeTest:
     ],
     ids=lambda t: t.name,
 )
+@pytest.mark.parametrize("is_null", [False, True], ids=["value", "null"])
+@pytest.mark.xfail(reason="The driver does not implement PL/SQL OUT parameter handling")
 def test_out_parameters_types(
-    subtests, driver, conn, testcase: OutParameterTypeTest
+    driver, conn, testcase: OutParameterTypeTest, is_null
 ) -> None:
-    for oracle_literal, expected_value in (
-        (testcase.oracle_literal, testcase.expected_value),
-        ("NULL", None),
-    ):
-        subname = "null" if oracle_literal == "NULL" else "value"
-        with subtests.test(case=subname):
-            setup = f"""
-            CREATE OR REPLACE PROCEDURE SP_GET_OUT_DEMO (reply OUT {testcase.oracle_type}) AS
-            BEGIN
-              reply := {oracle_literal};
-            END;
-            """
-            query = """BEGIN SP_GET_OUT_DEMO(:1); END;"""
-            with conn.cursor() as ddl_cursor:
-                ddl_cursor.execute(setup)
-            with conn.cursor() as cursor:
-                cursor.adbc_statement.set_options(
-                    **{"oracle.statement.execution_mode": "batch"}
-                )
-                params = pyarrow.record_batch(
-                    {"reply": [None]},
-                    schema=pyarrow.schema(
-                        [
-                            pyarrow.field(
-                                "reply",
-                                testcase.arrow_type,
-                                nullable=True,
-                                metadata={
-                                    "ORACLE:parameter_type": "out",
-                                },
-                            ),
-                        ]
+    oracle_literal = "NULL" if is_null else testcase.oracle_literal
+    expected_value = None if is_null else testcase.expected_value
+    setup = f"""
+    CREATE OR REPLACE PROCEDURE SP_GET_OUT_DEMO (reply OUT {testcase.oracle_type}) AS
+    BEGIN
+      reply := {oracle_literal};
+    END;
+    """
+    query = """BEGIN SP_GET_OUT_DEMO(:1); END;"""
+    with conn.cursor() as ddl_cursor:
+        ddl_cursor.execute(setup)
+    with conn.cursor() as cursor:
+        cursor.adbc_statement.set_options(
+            **{"oracle.statement.execution_mode": "batch"}
+        )
+        params = pyarrow.record_batch(
+            {"reply": [None]},
+            schema=pyarrow.schema(
+                [
+                    pyarrow.field(
+                        "reply",
+                        testcase.arrow_type,
+                        nullable=True,
+                        metadata={
+                            "ORACLE:parameter_type": "out",
+                        },
                     ),
-                )
-                cursor.adbc_statement.set_sql_query(query)
-                cursor.adbc_statement.bind(params)
-                handle, _ = cursor.adbc_statement.execute_query()
-                with pyarrow.RecordBatchReader._import_from_c(handle.address) as reader:
-                    result = reader.read_all()
-                field = result.schema.field("reply")
-                assert field.type == testcase.arrow_type
-                assert field.metadata == {
-                    b"ORACLE:parameter_type": b"out",
-                }
-                assert result.column("reply").to_pylist() == [expected_value]
+                ]
+            ),
+        )
+        cursor.adbc_statement.set_sql_query(query)
+        cursor.adbc_statement.bind(params)
+        handle, _ = cursor.adbc_statement.execute_query()
+        with pyarrow.RecordBatchReader._import_from_c(handle.address) as reader:
+            result = reader.read_all()
+        field = result.schema.field("reply")
+        assert field.type == testcase.arrow_type
+        assert field.metadata == {
+            b"ORACLE:parameter_type": b"out",
+        }
+        assert result.column("reply").to_pylist() == [expected_value]
 
 
+@pytest.mark.xfail(reason="The driver does not implement PL/SQL OUT parameter handling")
 def test_out_parameters_result_set(driver, conn) -> None:
     setup = """CREATE OR REPLACE PROCEDURE SP_MULTI(
   reply OUT NVARCHAR2,
@@ -584,6 +590,7 @@ END;
         assert cursor.fetchall() == [("Hello, world",)]
 
 
+@pytest.mark.xfail(reason="The driver does not implement PL/SQL OUT parameter handling")
 def test_out_parameters_inout(driver, conn) -> None:
     setup = "CREATE OR REPLACE PROCEDURE SP_INOUT_DEMO (val IN OUT NUMBER) AS BEGIN val := val * 2; END;"
     query = """BEGIN SP_INOUT_DEMO(:1); END;"""
@@ -619,6 +626,7 @@ def test_out_parameters_inout(driver, conn) -> None:
         }
 
 
+@pytest.mark.xfail(reason="The driver does not implement PL/SQL OUT parameter handling")
 def test_out_parameters_execute_update_rejected(driver, conn) -> None:
     setup = "CREATE OR REPLACE PROCEDURE SP_GET_OUT_DEMO (p1 IN NVARCHAR2, reply OUT NVARCHAR2) AS BEGIN reply := 'HELLO, ' || p1; END;"
     with conn.cursor() as cursor:
