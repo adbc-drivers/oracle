@@ -164,12 +164,14 @@ class TestQuery(adbc_drivers_validation.tests.query.TestQuery):
         super().test_get_table_schema(driver, conn, query, query_setup)
 
     @pytest.fixture(scope="module")
-    def geom_table(self, driver, conn) -> str:
+    @classmethod
+    def geom_table(cls, driver, conn) -> str:
         with conn.cursor() as cursor:
             driver.try_drop_table(cursor, table_name="GEOM")
             cursor.execute("CREATE TABLE GEOM (G SDO_GEOMETRY)")
         return "GEOM"
 
+    @pytest.mark.xfail(reason="The driver does not implement oracle.use_extension_type")
     def test_geometry_empty(self, subtests, driver, conn, geom_table) -> None:
         # Ensure empty geometry is handled identically between WKB/WKT
         with conn.cursor() as cursor:
@@ -240,6 +242,7 @@ class TestQuery(adbc_drivers_validation.tests.query.TestQuery):
 
     @hypothesis.given(geom=st_wkt(st_points))
     @hypothesis.settings(deadline=2000)
+    @pytest.mark.xfail(reason="The driver does not implement oracle.use_extension_type")
     def test_hypothesis_geometry_points(self, geom, driver, conn, geom_table) -> None:
         self.roundtrip_geometry(geom, driver, conn, geom_table)
 
@@ -252,6 +255,7 @@ class TestQuery(adbc_drivers_validation.tests.query.TestQuery):
         )
     )
     @hypothesis.settings(deadline=2000)
+    @pytest.mark.xfail(reason="The driver does not implement oracle.use_extension_type")
     def test_hypothesis_geometry_linestring_2d(
         self, geom, driver, conn, geom_table
     ) -> None:
@@ -266,6 +270,7 @@ class TestQuery(adbc_drivers_validation.tests.query.TestQuery):
         )
     )
     @hypothesis.settings(deadline=2000)
+    @pytest.mark.xfail(reason="The driver does not implement oracle.use_extension_type")
     def test_hypothesis_geometry_multipoint_2d(
         self, geom, driver, conn, geom_table
     ) -> None:
@@ -280,6 +285,7 @@ class TestQuery(adbc_drivers_validation.tests.query.TestQuery):
         )
     )
     @hypothesis.settings(deadline=2000)
+    @pytest.mark.xfail(reason="The driver does not implement oracle.use_extension_type")
     def test_hypothesis_geometry_multipoint_3d(
         self, geom, driver, conn, geom_table
     ) -> None:
@@ -296,6 +302,7 @@ class TestQuery(adbc_drivers_validation.tests.query.TestQuery):
         )
     )
     @hypothesis.settings(deadline=2000)
+    @pytest.mark.xfail(reason="The driver does not implement oracle.use_extension_type")
     def test_hypothesis_geometry_polygon_2d(
         self, geom, driver, conn, geom_table
     ) -> None:

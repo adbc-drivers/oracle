@@ -121,7 +121,8 @@ class Oracle26Quirks(model.DriverQuirks):
             )
 
         queries.update(additional_queries)
-        return model.QuerySet(queries=queries)
+        disabled = Path(__file__).parent.parent / "queries/disabled"
+        return model.QuerySet.load(disabled, parent=model.QuerySet(queries=queries))
 
     def query_override(self, context: str, default: str) -> str:
         if context == "TestConnection.test_get_table_schema_schema":
