@@ -24,9 +24,12 @@
 
 [package]
 name = "adbc_oracle"
-version = "0.1.0"
+version = "0.8.0-beta.1"
 edition = "2024"
 license = "UPL-1.0 OR Apache-2.0"
+description = "An ADBC driver for Oracle Database"
+documentation = "https://adbc-drivers.org/drivers/oracle/"
+repository = "https://github.com/adbc-drivers/oracle"
 
 [dependencies]
 adbc_core = "0.25.0"
