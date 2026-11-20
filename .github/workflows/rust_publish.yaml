@@ -1,0 +1,92 @@
+# -----------------------------------------------------------------------------
+# Copyright (c) 2026 ADBC Drivers Contributors
+#
+# This software is dual-licensed to you under the Universal Permissive License
+# (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl and Apache License
+# 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose
+# either license.
+#
+# If you elect to accept the software under the Apache License, Version 2.0,
+# the following applies:
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# -----------------------------------------------------------------------------
+
+name: Publish to crates.io
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "The tag to publish"
+        required: true
+        type: string
+
+      publish:
+        description: "Publish, instead of a dry-run"
+        required: true
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.repository }}-${{ github.workflow }}-${{ inputs.tag }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: "Publish"
+    runs-on: ubuntu-latest
+    environment: cratesio
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: refs/tags/${{ inputs.tag }}
+          fetch-depth: 0
+          persist-credentials: false
+          submodules: 'recursive'
+
+      - uses: actions-rust-lang/setup-rust-toolchain@ecabd13d1c56bd1345c230e542e9144811ad706f  # v2.0.0
+        with:
+          cache: false
+
+      - name: Check tag matches version
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          declared_version=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')
+          if [[ "v${declared_version}" != "${TAG}" ]]; then
+             echo "Declared driver version in Cargo.toml ${declared_version}"
+             echo "does not match tag ${TAG}"
+             echo "Please update the version before release."
+             exit 1
+          fi
+
+      - name: Dry-run
+        run: |
+          cargo publish --dry-run --locked
+
+      # To be replaced by Trusted Publishing. However, the first upload cannot
+      # be done that way.
+      - name: Publish
+        if: inputs.publish
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |  # zizmor: ignore[use-trusted-publishing]
+          cargo publish --locked
