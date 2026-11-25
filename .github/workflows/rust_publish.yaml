@@ -54,6 +54,8 @@ jobs:
     name: "Publish"
     runs-on: ubuntu-latest
     environment: cratesio
+    permissions:
+      id-token: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
@@ -78,15 +80,16 @@ jobs:
              exit 1
           fi
 
+      - uses: rust-lang/crates-io-auth-action@3268eb413133e2960fa4ae0e963ca76380c54cd9 # v1.0.6
+        id: auth
+
       - name: Dry-run
         run: |
           cargo publish --dry-run --locked
 
-      # To be replaced by Trusted Publishing. However, the first upload cannot
-      # be done that way.
       - name: Publish
         if: inputs.publish
         env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-        run: |  # zizmor: ignore[use-trusted-publishing]
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        run: |
           cargo publish --locked
